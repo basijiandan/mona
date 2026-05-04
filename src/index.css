@@ -4,6 +4,37 @@
 @theme {
   --font-sans: "Nunito", "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif;
+
+  --animate-fall: fall linear forwards;
+  --animate-star-scatter: star-scatter 0.6s ease-out forwards;
+
+  @keyframes fall {
+    0% {
+      transform: translateY(-10vh) rotate(0deg);
+      opacity: 0;
+    }
+    5% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(110vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes star-scatter {
+    0% {
+      transform: translate(0, 0) scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--tx), var(--ty)) scale(0) rotate(180deg);
+      opacity: 0;
+    }
+  }
 }
 
 body {

@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactPlayer from 'react-player';
@@ -13,7 +13,7 @@ const SONGS = [
     cover: 'https://images.unsplash.com/photo-1613336026275-d6d473084e85?q=80&w=600&auto=format&fit=crop',
     color: 'from-[#ff9a9e] to-[#fecfef]',
     description: '最强偶像的撒娇宣言！感受舞台上的心跳。',
-    tag: 'NEW EXCLUSIVE',
+    tag: '新曲・独占配信',
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ const SONGS = [
     cover: 'https://images.unsplash.com/photo-1605369572399-05d8d64a0f6e?q=80&w=600&auto=format&fit=crop',
     color: 'from-[#8fd3f4] to-[#84fab0]',
     description: '我的偶像宣言，绝不认输的元气单曲！',
-    tag: 'MILLION HITS',
+    tag: 'ミリオンヒット',
   },
   {
     id: 3,
@@ -33,7 +33,7 @@ const SONGS = [
     cover: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=600&auto=format&fit=crop',
     color: 'from-[#cd9cf2] to-[#f6f3ff]',
     description: '永远的第一名，向着梦想闪耀的轨迹。',
-    tag: 'ALBUM TITLE TRACK',
+    tag: 'アルバムタイトル曲',
   },
   {
     id: 4,
@@ -43,7 +43,7 @@ const SONGS = [
     cover: 'https://images.unsplash.com/photo-1578305086574-8b6401dc22db?q=80&w=600&auto=format&fit=crop',
     color: 'from-[#fbc2eb] to-[#a6c1ee]',
     description: '骄傲的偶像，挥洒汗水与泪水的舞台。',
-    tag: 'LIVE FAN FAVORITE',
+    tag: 'ライブ人気曲',
   },
   {
     id: 5,
@@ -53,7 +53,7 @@ const SONGS = [
     cover: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=600&auto=format&fit=crop',
     color: 'from-[#fed6e3] to-[#a8edea]',
     description: '可爱到抱歉，绝对自信的甜蜜暴击。',
-    tag: 'VIRAL HIT',
+    tag: 'バイラルヒット',
   }
 ];
 
@@ -62,7 +62,85 @@ const INITIAL_COMMENTS = [
   { id: 2, author: 'IdolFan99', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Ken&backgroundColor=b6e3f4', text: '作为超级偶像的决心感受到了！', time: '5小时前' },
 ];
 
+function FallingHearts() {
+  const [hearts, setHearts] = useState<{ id: number; left: number; delay: number; scale: number; popped: boolean }[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHearts((current) => {
+        // limit number of hearts on screen to 15
+        if (current.length > 15) {
+          return [...current.slice(1), { 
+            id: Date.now(), 
+            left: Math.random() * 90 + 5, 
+            delay: Math.random() * 2, 
+            scale: Math.random() * 0.5 + 0.8,
+            popped: false
+          }];
+        }
+        return [...current, { 
+          id: Date.now(), 
+          left: Math.random() * 90 + 5, 
+          delay: Math.random() * 2, 
+          scale: Math.random() * 0.5 + 0.8,
+          popped: false
+        }];
+      });
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handlePop = (id: number) => {
+    setHearts(current => current.map(h => h.id === id ? { ...h, popped: true } : h));
+    setTimeout(() => {
+      setHearts(current => current.filter(h => h.id !== id));
+    }, 600);
+  };
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+      {hearts.map(heart => (
+        <div
+          key={heart.id}
+          className={`absolute flex justify-center items-center ${heart.popped ? '' : 'animate-[fall_15s_linear_forwards]'}`}
+          style={{ 
+            left: `${heart.left}%`, 
+            top: heart.popped ? 'auto' : '-10%',
+            animationDelay: `${heart.delay}s`,
+            transform: heart.popped ? 'none' : `scale(${heart.scale})`
+          }}
+        >
+          {heart.popped ? (
+            <div className="relative w-8 h-8 pointer-events-none flex items-center justify-center">
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <Star 
+                  key={i} 
+                  className="absolute animate-[star-scatter_0.6s_ease-out_forwards] text-[#fef08a] fill-[#fef08a] drop-shadow-sm w-4 h-4"
+                   style={{ 
+                     /* @ts-ignore */
+                    '--tx': `${Math.cos(i * 45 * Math.PI / 180) * 60}px`,
+                     /* @ts-ignore */
+                    '--ty': `${Math.sin(i * 45 * Math.PI / 180) * 60}px`,
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+              <button 
+                onClick={() => handlePop(heart.id)}
+                className="pointer-events-auto hover:scale-110 transition-transform flex items-center justify-center cursor-crosshair transform hover:animate-pulse"
+              >
+                 <Heart className="w-8 h-8 text-[#ff9a9e] fill-[#ff9a9e] drop-shadow-md" />
+              </button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
+  const [started, setStarted] = useState(false);
   const [currentSong, setCurrentSong] = useState(SONGS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -107,7 +185,7 @@ export default function App() {
     setComments([
       {
         id: Date.now(),
-        author: 'Guest_Fan',
+        author: 'ゲストファン',
         avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${Date.now()}&backgroundColor=ffdfbf`,
         text: newComment,
         time: '刚刚'
@@ -142,6 +220,24 @@ export default function App() {
 
   return (
     <div className="h-screen w-full overflow-y-auto snap-y snap-mandatory bg-white font-sans text-slate-800">
+      <AnimatePresence>
+        {!started && (
+          <motion.div
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#ff9ff3] z-[200] flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm"
+            onClick={() => {
+              setStarted(true);
+              setBgmPlaying(true);
+            }}
+          >
+            <Heart className="w-24 h-24 text-[#fff] fill-[#fff] animate-pulse mb-8 drop-shadow-md" />
+            <h1 className="text-5xl font-black text-white mb-4 drop-shadow-md">クリックして入る</h1>
+            <p className="text-white font-bold text-xl drop-shadow-md">音楽が自動再生されます</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <FallingHearts />
       
       {/* Background Audio (YouTube ReactPlayer) */}
       <div className="fixed bottom-0 left-0 w-[10px] h-[10px] overflow-hidden pointer-events-none opacity-0">
@@ -149,7 +245,7 @@ export default function App() {
           url="https://www.youtube.com/watch?v=MHXACQ_Ar0o"
           playing={bgmPlaying}
           loop={true}
-          volume={1.0}
+          volume={0.2}
           width="10px"
           height="10px"
           config={{
@@ -161,12 +257,12 @@ export default function App() {
       </div>
 
       {/* Global BGM Control */}
-      <div className="fixed top-[3.5rem] right-4 z-[100] md:right-8 lg:top-[4.5rem] lg:right-12">
+      <div className="fixed top-[5rem] right-4 z-[100] md:right-8 lg:top-[6rem] lg:right-12">
         <button 
           onClick={toggleBgm} 
-          className="bg-[#54a0ff] w-12 h-12 rounded-full border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] flex items-center justify-center text-white transition-transform hover:-translate-y-1 active:shadow-none active:translate-y-1 group"
+          className="bg-[#fef08a] w-14 h-14 rounded-full border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] flex items-center justify-center text-slate-900 transition-transform hover:-translate-y-1 active:shadow-none active:translate-y-1 group"
         >
-          {bgmPlaying ? <Volume2 className="w-6 h-6 group-hover:animate-pulse" /> : <VolumeX className="w-6 h-6" />}
+          {bgmPlaying ? <Volume2 className="w-8 h-8 group-hover:animate-pulse" /> : <VolumeX className="w-8 h-8" />}
         </button>
       </div>
 
@@ -189,29 +285,54 @@ export default function App() {
         {/* Global Navigation within Poster */}
         <div className="absolute top-[4.5rem] w-full px-6 md:px-12 flex justify-between items-center text-slate-900 z-50">
           <div className="flex gap-4 pointer-events-auto">
-            <span className="font-display font-black text-xl tracking-widest uppercase bg-white px-5 py-2 border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] transform -rotate-1 hidden sm:block">Mona.Official</span>
+            <span className="font-display font-black text-xl tracking-widest uppercase bg-white px-5 py-2 border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] transform -rotate-1 hidden sm:block">モナ公式</span>
           </div>
           <div className="flex gap-4 pointer-events-auto">
-             <button className="bg-[#ff9ff3] border-4 border-slate-900 px-6 py-2 rounded-full font-bold text-sm tracking-widest uppercase transition-transform hover:-translate-y-1 hover:shadow-[4px_6px_0_#0f172a] shadow-[4px_4px_0_#0f172a]">LOGIN</button>
+             <button className="bg-[#ff9ff3] border-4 border-slate-900 px-6 py-2 rounded-full font-bold text-sm tracking-widest uppercase transition-transform hover:-translate-y-1 hover:shadow-[4px_6px_0_#0f172a] shadow-[4px_4px_0_#0f172a]">ログイン</button>
              <button className="bg-white border-4 border-slate-900 w-12 h-12 rounded-full flex items-center justify-center font-bold transition-transform hover:-translate-y-1 hover:shadow-[4px_6px_0_#0f172a] shadow-[4px_4px_0_#0f172a]"><Menu className="w-6 h-6"/></button>
           </div>
         </div>
 
         {/* Central Graphic Composition */}
-        <div className="relative w-full max-w-7xl px-4 flex flex-col md:flex-row items-center justify-center gap-12 z-10 scale-90 md:scale-100">
+        <div className="relative w-full max-w-7xl px-4 flex flex-col md:flex-row items-center justify-center gap-12 z-10 scale-90 md:scale-100 mt-8">
           
+          {/* Cute Floating Elements */}
+          <motion.div 
+            animate={{ y: [0, -20, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+            className="absolute top-0 right-[20%] z-0 hidden md:block"
+          >
+             <div className="w-24 h-24 bg-[#ff6b81] rounded-full border-4 border-slate-900 flex items-center justify-center shadow-[4px_4px_0_#0f172a] transform rotate-12">
+               <span className="text-4xl text-white font-black tracking-widest">ラブ！</span>
+             </div>
+          </motion.div>
+
+          <motion.div 
+            animate={{ y: [0, 20, 0] }}
+            transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+            className="absolute bottom-10 left-[10%] z-0 hidden md:block"
+          >
+             <div className="p-4 bg-[#54a0ff] rounded-[2rem] border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] transform -rotate-12">
+               <Music className="w-12 h-12 text-white" />
+             </div>
+          </motion.div>
+
           {/* Character / Concept Block (Left) */}
           <motion.div 
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="w-full md:w-5/12 bg-white rounded-[2.5rem] border-4 border-slate-900 p-6 shadow-[12px_12px_0px_#0f172a] group rotate-[-2deg]"
+            className="w-full md:w-5/12 bg-white rounded-[2.5rem] border-4 border-slate-900 p-6 shadow-[12px_12px_0px_#0f172a] group rotate-[-2deg] relative z-10"
           >
+            <div className="absolute -top-6 -left-6 bg-[#fef08a] p-3 rounded-full border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] transform -rotate-12 z-20">
+               <Star className="w-8 h-8 fill-slate-900 text-slate-900" />
+            </div>
+
             <div className="aspect-[4/5] rounded-[1.5rem] border-4 border-slate-900 overflow-hidden relative bg-[#ff9ff3]">
                <img src="https://images.unsplash.com/photo-1549298240-0d8e60513026?q=80&w=800&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 mix-blend-luminosity opacity-80" alt="Mona Theme" />
-               <div className="absolute inset-0 bg-gradient-to-t from-pink-600/90 via-pink-400/20 to-transparent flex flex-col justify-end p-8">
-                 <span className="bg-[#fef08a] text-slate-900 px-4 py-1.5 text-sm font-black uppercase tracking-widest border-2 border-slate-900 transform -rotate-3 inline-block shadow-[4px_4px_0_#0f172a] w-fit mb-4">Debut Album</span>
-                 <h2 className="text-4xl md:text-5xl font-display font-black text-white drop-shadow-[0_4px_4px_#ec4899] leading-none mb-2">#No.1<br/>IDOL</h2>
-                 <p className="font-bold text-pink-100 text-lg tracking-wide">成海萌奈 Narumi Mona</p>
+               <div className="absolute inset-0 bg-gradient-to-t from-pink-600/90 via-pink-400/30 to-transparent flex flex-col justify-end p-8">
+                 <span className="bg-[#fef08a] text-slate-900 px-4 py-1.5 text-sm font-black uppercase tracking-widest border-2 border-slate-900 transform -rotate-3 inline-block shadow-[4px_4px_0_#0f172a] w-fit mb-4">デビューアルバム</span>
+                 <h2 className="text-4xl md:text-5xl font-display font-black text-white drop-shadow-[0_4px_4px_#ec4899] leading-none mb-2">#No.1<br/>アイドル</h2>
+                 <p className="font-bold text-pink-100 text-lg tracking-wide">成海萌奈 (Narumi Mona)</p>
                </div>
             </div>
             
@@ -235,11 +356,11 @@ export default function App() {
                
                <div className="mt-8 flex justify-between items-center mb-6 px-2">
                  <div>
-                   <h3 className="font-black text-2xl font-display tracking-tight leading-none text-slate-900">Mona for you!</h3>
-                   <p className="text-xs text-slate-500 font-bold tracking-widest uppercase mt-1">To: Producers</p>
+                   <h3 className="font-black text-2xl font-display tracking-tight leading-none text-slate-900">モナ・フォー・ユー！</h3>
+                   <p className="text-xs text-slate-500 font-bold tracking-widest uppercase mt-1">To: プロデューサー</p>
                  </div>
-                 <div className="bg-[#ff9ff3] p-2 rounded-full border-2 border-slate-900 shadow-[2px_2px_0_#0f172a]">
-                   <Sparkles className="w-4 h-4 text-slate-900 fill-slate-900" />
+                 <div className="bg-[#ff9ff3] p-2 rounded-full border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] animate-pulse">
+                   <Heart className="w-5 h-5 text-slate-900 fill-slate-900" />
                  </div>
                </div>
                
@@ -274,14 +395,16 @@ export default function App() {
           <div className="hidden lg:flex w-3/12 flex-col gap-10 items-center justify-center pl-8">
              <motion.div 
                whileHover={{ scale: 1.1, rotate: -15 }}
-               className="bg-[#54a0ff] border-4 border-slate-900 px-8 py-6 rounded-[2rem] rounded-bl-none shadow-[8px_8px_0_#0f172a] transform rotate-[-10deg]"
+               className="bg-[#54a0ff] border-4 border-slate-900 px-8 py-6 rounded-[2rem] rounded-bl-none shadow-[8px_8px_0_#0f172a] transform rotate-[-10deg] relative"
              >
-                <p className="font-display font-black text-3xl text-white uppercase text-center leading-none tracking-tight">Super<br/>Idol</p>
+                <div className="absolute -top-4 -right-4 bg-[#fef08a] w-8 h-8 rounded-full border-2 border-slate-900 flex items-center justify-center -z-10"></div>
+                <p className="font-display font-black text-[1.7rem] text-white uppercase text-center leading-none tracking-tight">スーパー<br/>アイドル</p>
              </motion.div>
              <motion.div 
                whileHover={{ scale: 1.1, rotate: 15 }}
-               className="bg-[#ff9ff3] border-4 border-slate-900 p-8 rounded-full shadow-[8px_8px_0_#0f172a] transform rotate-12 flex items-center justify-center"
+               className="bg-[#ff9ff3] border-4 border-slate-900 p-8 rounded-full shadow-[8px_8px_0_#0f172a] transform rotate-12 flex items-center justify-center relative"
              >
+                <div className="absolute top-2 left-2 w-3 h-3 bg-white rounded-full"></div>
                 <Star className="w-12 h-12 text-slate-900 fill-slate-900" />
              </motion.div>
           </div>
@@ -292,23 +415,26 @@ export default function App() {
       <section className="min-h-screen w-full snap-start bg-[#f8a5c2] pt-24 pb-12 flex flex-col md:flex-row relative overflow-x-hidden border-b-[8px] border-slate-900 px-8 lg:px-16 items-center custom-scrollbar overflow-y-auto">
         {/* Background Graphic */}
         <div className="absolute -left-10 -bottom-10 opacity-20 pointer-events-none">
-           <Star className="w-96 h-96 text-white fill-white transform rotate-45" />
+           <Heart className="w-96 h-96 text-white fill-white transform -rotate-12" />
+        </div>
+        <div className="absolute top-10 right-20 opacity-30 pointer-events-none hidden md:block">
+           <Sparkles className="w-32 h-32 text-white fill-white" />
         </div>
 
         {/* Profile Details */}
         <div className="w-full md:w-1/2 flex flex-col z-10 space-y-8 h-full justify-center">
            <div>
-             <div className="bg-slate-900 text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)] transform -rotate-2">Profile</div>
-             <h2 className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter leading-none mb-2 drop-shadow-[4px_4px_0_#0f172a]">NARUMI<br/>MONA</h2>
+             <div className="bg-slate-900 text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)] transform -rotate-2">プロフィール</div>
+             <h2 className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter leading-none mb-2 drop-shadow-[4px_4px_0_#0f172a]">成海<br/>萌奈</h2>
              <p className="text-xl font-bold bg-[#fef08a] text-slate-900 px-3 py-1 w-fit border-2 border-slate-900 transform rotate-1 shadow-[4px_4px_0_#0f172a]">成海 萌奈</p>
            </div>
            
            <div className="bg-white rounded-[2rem] border-4 border-slate-900 p-6 shadow-[8px_8px_0_#0f172a] transform -rotate-1 max-w-lg">
-             <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Sparkles className="w-5 h-5 text-pink-500"/> Personality</h3>
+             <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Sparkles className="w-5 h-5 text-pink-500"/> 性格</h3>
              <p className="font-bold text-slate-700 leading-relaxed mb-6 text-sm">
                 不服输、充满热情与活力的努力家！虽然偶尔会有些笨拙，但为了粉丝总能展现出120%的完美笑容。是个极度妹系却又意外要强的偶像。
              </p>
-             <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Heart className="w-5 h-5 text-pink-500 fill-pink-500"/> Backstory</h3>
+             <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Heart className="w-5 h-5 text-pink-500 fill-pink-500"/> 生い立ち</h3>
              <p className="font-bold text-slate-700 leading-relaxed text-sm">
                 看着完美无瑕的姐姐（成海圣奈），内心深处曾有些许自卑，但也因此燃烧起了必须证明自己的斗志。怀揣着“我也要在属于我的舞台上闪耀”的决心，Mona 踏上了残酷又绚丽的偶像之路。
              </p>
@@ -317,16 +443,16 @@ export default function App() {
 
         {/* Relationship Map */}
         <div className="w-full md:w-1/2 flex flex-col items-center justify-center relative mt-16 md:mt-0 z-10 min-h-[400px]">
-           <h3 className="text-2xl md:text-3xl font-display font-black text-slate-900 mb-8 bg-white px-6 py-2 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] transform rotate-2">Relationship Map</h3>
+           <h3 className="text-2xl md:text-3xl font-display font-black text-slate-900 mb-8 bg-white px-6 py-2 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] transform rotate-2">相関図</h3>
            
            <div className="relative w-full max-w-md aspect-square bg-white/30 rounded-full border-4 border-dashed border-slate-900 flex items-center justify-center">
               <div className="absolute inset-0 flex items-center justify-center">
                  {/* Center: Mona */}
                  <div className="relative z-20 flex flex-col items-center group">
                    <div className="w-24 h-24 rounded-full border-4 border-slate-900 overflow-hidden bg-pink-300 shadow-[4px_4px_0_#0f172a] mb-2 transform group-hover:scale-110 transition-transform">
-                      <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=Mona&backgroundColor=ffb8b8" alt="Mona" className="w-full h-full object-cover" />
+                      <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=Mona&backgroundColor=ffb8b8" alt="Mona" className="w-full h-full object-cover p-2" />
                    </div>
-                   <span className="bg-white px-3 py-1 font-black text-slate-900 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0_#0f172a]">Mona</span>
+                   <span className="bg-white px-3 py-1 font-black text-slate-900 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0_#0f172a]">モナ</span>
                  </div>
 
                  {/* Connecting Line to U */}
@@ -375,9 +501,10 @@ export default function App() {
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-end px-8 md:px-16 mb-12">
-          <div>
-            <div className="bg-slate-900 text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)]">Discography</div>
-            <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none transform -rotate-1">What's<br/>New?</h2>
+          <div className="relative">
+            <div className="bg-slate-900 text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)]">ディスコグラフィー</div>
+            <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none transform -rotate-1 relative z-10">最新情報</h2>
+            <div className="absolute -bottom-4 -right-8 -z-10 bg-[#ff9ff3] w-24 h-24 rounded-full border-4 border-slate-900 hidden md:block"></div>
           </div>
           
           <div className="hidden md:flex gap-4 mt-8 md:mt-0">
@@ -416,7 +543,7 @@ export default function App() {
                       {/* Interactive overlays */}
                       {currentSong.id === song.id ? (
                         <div className="absolute inset-0 bg-slate-900/40 p-4 flex flex-col justify-between">
-                           <div className="self-end bg-[#10ac84] text-slate-900 border-2 border-slate-900 px-3 py-1 font-black shadow-[4px_4px_0_#0f172a] animate-pulse">PLAYING</div>
+                           <div className="self-end bg-[#10ac84] text-slate-900 border-2 border-slate-900 px-3 py-1 font-black shadow-[4px_4px_0_#0f172a] animate-pulse">再生中</div>
                            
                            {isPlaying && (
                              <div className="flex gap-2 items-end h-16 self-center justify-center w-full">
@@ -455,17 +582,17 @@ export default function App() {
       </section>
 
       {/* PAGE 4: Fan Board - Cute & Interactive */}
-      <section className="min-h-screen w-full snap-start bg-[#48dbfb] pt-24 pb-32 flex flex-col items-center justify-center relative overflow-hidden">
+      <section className="min-h-screen w-full snap-start bg-[#a9ffcb] pt-24 pb-32 flex flex-col items-center justify-center relative overflow-hidden">
         
         {/* Background Decorations */}
-        <div className="absolute top-10 right-10 opacity-20"><Heart className="w-64 h-64 text-white fill-white transform rotate-12" /></div>
-        <div className="absolute bottom-10 left-10 opacity-20"><MessageSquare className="w-80 h-80 text-white fill-white transform -rotate-12" /></div>
+        <div className="absolute top-10 right-10 opacity-20"><Heart className="w-64 h-64 text-slate-900 fill-[#ff9ff3] transform rotate-12" /></div>
+        <div className="absolute bottom-10 left-10 opacity-20"><Star className="w-80 h-80 text-slate-900 fill-[#fef08a] transform -rotate-12" /></div>
 
         <div className="w-full max-w-5xl px-8 z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
            
            {/* Left: Input Form */}
            <div className="flex flex-col">
-             <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none mb-4 transform -rotate-2">Fan<br/>Board</h2>
+             <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none mb-4 transform -rotate-2">ファン<br/>掲示板</h2>
              <p className="text-2xl font-bold text-slate-900 mb-8 px-2 bg-white w-fit border-2 border-slate-900 shadow-[4px_4px_0_#0f172a] transform rotate-1">支持与热爱，送给最闪耀的偶像！</p>
              
              <div className="bg-white rounded-[2rem] border-4 border-slate-900 shadow-[12px_12px_0px_#0f172a] p-8 mt-4 transform -rotate-1">
@@ -474,17 +601,17 @@ export default function App() {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="写下你对 Mona 酱的热爱吧！✨" 
-                    className="w-full min-h-[160px] bg-[#f8f9fa] border-4 border-slate-200 focus:border-[#48dbfb] rounded-2xl p-6 text-slate-800 text-xl font-bold outline-none transition-all resize-none shadow-inner"
+                    className="w-full min-h-[160px] bg-[#fff] border-4 border-slate-900 focus:border-[#48dbfb] rounded-2xl p-6 text-slate-800 text-xl font-bold outline-none transition-all resize-none shadow-[inset_4px_4px_0_rgba(15,23,42,0.1)]"
                     maxLength={150}
                   />
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-400 font-mono text-sm">{newComment.length}/150 words</span>
+                    <span className="font-bold text-slate-400 font-mono text-sm">{newComment.length}/150 文字</span>
                     <button 
                       type="submit"
                       disabled={!newComment.trim()}
                       className="bg-[#ff9ff3] border-4 border-slate-900 text-slate-900 px-8 py-4 rounded-full font-black text-xl hover:-translate-y-1 hover:shadow-[6px_6px_0_#0f172a] shadow-[4px_4px_0_#0f172a] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_#0f172a] transition-all flex items-center gap-3"
                     >
-                      Post Message <Send className="w-5 h-5 fill-slate-900" />
+                      投稿する <Send className="w-5 h-5 fill-slate-900" />
                     </button>
                   </div>
                </form>
@@ -500,10 +627,11 @@ export default function App() {
                     animate={{ opacity: 1, x: 0, rotate: 0 }}
                     transition={{ delay: i * 0.05 }}
                     key={comment.id} 
-                    className="bg-white p-6 rounded-[2rem] rounded-bl-none border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] flex gap-4 hover:-translate-y-1 hover:shadow-[8px_8px_0_#0f172a] transition-all"
+                    className="bg-white p-6 rounded-[2rem] rounded-bl-none border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] flex gap-4 hover:-translate-y-1 hover:shadow-[8px_8px_0_#0f172a] transition-all relative overflow-hidden"
                   >
-                    <div className="w-16 h-16 rounded-full border-4 border-slate-900 overflow-hidden shrink-0 bg-[#fef08a]">
-                      <img src={comment.avatar} alt="avatar" className="w-full h-full" />
+                    <div className="absolute top-0 right-0 w-8 h-8 bg-polka opacity-20 pointer-events-none"></div>
+                    <div className={`w-16 h-16 rounded-full border-4 border-slate-900 overflow-hidden shrink-0 ${i % 2 === 0 ? 'bg-[#ff9ff3]' : 'bg-[#54a0ff]'}`}>
+                      <img src={comment.avatar} alt="avatar" className="w-full h-full object-cover p-1" />
                     </div>
                     <div className="flex-1">
                        <div className="flex justify-between items-start mb-2">
