@@ -279,6 +279,139 @@ function FallingStars() {
   );
 }
 
+// --- Helper Components ---
+
+function MonaLive2D({ mousePos }: { mousePos: { x: number, y: number } }) {
+  const [isLaughing, setIsLaughing] = useState(false);
+
+  // Rotation angles based on mouse position
+  const rotateY = mousePos.x * 20; // Max 20 deg left/right
+  const rotateX = -mousePos.y * 20; // Max 20 deg up/down
+  
+  // Subtle sway effect
+  const sway = {
+    animate: {
+      y: [0, -5, 0],
+      rotate: [0, 0.5, -0.5, 0]
+    },
+    transition: {
+      duration: 4,
+      repeat: Infinity,
+      ease: "easeInOut" as const
+    }
+  };
+
+  const handleHeadClick = () => {
+    setIsLaughing(true);
+    setTimeout(() => setIsLaughing(false), 2000);
+  };
+
+  return (
+    <motion.div 
+      {...sway}
+      className="relative w-[280px] h-[400px] cursor-pointer group"
+      style={{ perspective: 1000 }}
+    >
+      {/* Body Layer */}
+      <motion.div 
+        className="absolute inset-0 flex items-end justify-center"
+        style={{ rotateY: rotateY * 0.3, rotateX: rotateX * 0.3 }}
+      >
+        <svg width="240" height="300" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Simple School Uniform / Idol Outfit */}
+          <path d="M30 120 L70 120 L75 40 L25 40 Z" fill="#2d3436" />
+          <path d="M25 40 L50 30 L75 40 L50 60 Z" fill="white" />
+          <path d="M45 40 L50 50 L55 40 Z" fill="#ff7675" /> {/* Bow */}
+          <rect x="35" y="20" width="30" height="20" rx="10" fill="#fbc531" opacity="0.3" /> {/* Neck area */}
+        </svg>
+      </motion.div>
+
+      {/* Head Layer (Main Interactive Part) */}
+      <motion.div 
+        onClick={handleHeadClick}
+        className="absolute bottom-[200px] left-1/2 -translate-x-1/2 w-[180px] h-[220px]"
+        style={{ 
+          rotateY: rotateY, 
+          rotateX: rotateX,
+          x: mousePos.x * 15,
+          y: mousePos.y * 15,
+          transformStyle: "preserve-3d"
+        }}
+      >
+        {/* Hair - Back */}
+        <div className="absolute inset-0 z-0">
+          <svg viewBox="0 0 100 100" fill="#e67e22">
+            <path d="M10 50 C10 10 90 10 90 50 L85 90 C85 95 15 95 15 90 Z" />
+          </svg>
+        </div>
+
+        {/* Face Base */}
+        <div className="absolute inset-[15%] bg-[#ffeaa7] rounded-[40%] border-4 border-slate-900 z-10" />
+
+        {/* Eyes */}
+        <motion.div 
+          className="absolute top-[40%] left-[25%] flex justify-between w-[50%] z-20"
+          animate={isLaughing ? { scaleY: 0.1 } : { scaleY: 1 }}
+        >
+          <div className="w-6 h-6 bg-white rounded-full border-2 border-slate-900 relative overflow-hidden">
+            <motion.div 
+              style={{ x: mousePos.x * 6, y: mousePos.y * 6 }}
+              className="absolute inset-1.5 bg-[#2ecc71] rounded-full"
+            >
+              <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full opacity-80" />
+            </motion.div>
+          </div>
+          <div className="w-6 h-6 bg-white rounded-full border-2 border-slate-900 relative overflow-hidden">
+            <motion.div 
+              style={{ x: mousePos.x * 6, y: mousePos.y * 6 }}
+              className="absolute inset-1.5 bg-[#2ecc71] rounded-full"
+            >
+              <div className="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full opacity-80" />
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Mouth */}
+        <motion.div 
+          className="absolute top-[65%] left-1/2 -translate-x-1/2 z-20"
+          animate={isLaughing ? { scale: 1.5, y: -2 } : { scale: 1, y: 0 }}
+        >
+          {isLaughing ? (
+            <div className="w-10 h-5 bg-[#ff7675] rounded-full border-2 border-slate-900" />
+          ) : (
+            <div className="w-8 h-2 bg-[#ff7675] rounded-full border-2 border-slate-900 opacity-60" />
+          )}
+        </motion.div>
+
+        {/* Hair - Front (Bangs & Twintails) */}
+        <div className="absolute inset-0 z-30 pointer-events-none">
+          <svg viewBox="0 0 100 100" fill="none">
+             {/* Bangs */}
+             <path d="M15 20 Q50 -10 85 20 Q50 45 15 20" fill="#e67e22" stroke="#2d3436" strokeWidth="1" />
+             {/* Pink Bows */}
+             <path d="M10 40 L0 30 L20 30 Z" fill="#fd79a8" stroke="#2d3436" strokeWidth="1" />
+             <path d="M90 40 L100 30 L80 30 Z" fill="#fd79a8" stroke="#2d3436" strokeWidth="1" />
+          </svg>
+        </div>
+      </motion.div>
+
+      {/* Laugh Text Bubble */}
+      <AnimatePresence>
+        {isLaughing && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: -40 }}
+            exit={{ opacity: 0, scale: 0 }}
+            className="absolute top-0 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-full border-4 border-slate-900 shadow-[8px_8px_0_#0f172a] font-black z-50 text-pink-500 whitespace-nowrap uppercase italic tracking-widest text-lg"
+          >
+            Ahahaha! ☆
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 export default function App() {
   const [lang, setLang] = useState<'zh' | 'ja'>('zh');
   const t = TRANSLATIONS[lang];
@@ -287,12 +420,26 @@ export default function App() {
   const [currentSong, setCurrentSong] = useState(SONGS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
   const [comments, setComments] = useState(INITIAL_COMMENTS);
   const [newComment, setNewComment] = useState('');
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [bgmPlaying, setBgmPlaying] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (scrollContainerRef.current) {
+        const rect = scrollContainerRef.current.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        setMousePos({ x, y });
+      }
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -362,7 +509,10 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-full overflow-y-auto snap-y snap-mandatory bg-white font-sans text-slate-800">
+    <div 
+      className="h-screen w-full overflow-y-auto snap-y snap-mandatory bg-white font-sans text-slate-800"
+      ref={scrollContainerRef}
+    >
       <AnimatePresence>
         {!started && (
           <motion.div
@@ -493,11 +643,16 @@ export default function App() {
              </div>
           </motion.div>
 
-          {/* Character / Concept Block (Left) */}
+          {/* Mona Live2D Interactive Character */}
+          <div className="w-full md:w-5/12 flex items-center justify-center pointer-events-auto z-20">
+             <MonaLive2D mousePos={mousePos} />
+          </div>
+
+          {/* Album Cover Display Card */}
           <motion.div 
-            initial={{ x: -50, opacity: 0 }}
+            initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="w-full md:w-5/12 bg-white rounded-[2.5rem] border-4 border-slate-900 p-6 shadow-[12px_12px_0px_#0f172a] group rotate-[-2deg] relative z-10"
+            className="w-full md:w-4/12 bg-white rounded-[2.5rem] border-4 border-slate-900 p-6 shadow-[12px_12px_0px_#0f172a] group rotate-[-2deg] relative z-10"
           >
             <div className="absolute -top-6 -left-6 bg-[#ffc8dd] p-3 rounded-full border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] transform -rotate-12 z-20">
                <Star className="w-8 h-8 fill-slate-900 text-slate-900" />
@@ -603,9 +758,9 @@ export default function App() {
         {/* Profile Details (Liner Notes Page 2) */}
         <div className="w-full md:w-1/2 flex flex-col z-10 space-y-8 h-full justify-center">
            <div className="relative">
-             <div className="bg-slate-900 text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(255,159,243,1)] transform -rotate-2">PAGE 02 // LINER NOTES</div>
+             <div className="bg-slate-900 text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(255,159,243,1)] transform -rotate-2">PAGE 02 // AUDITION RESUME</div>
              <h2 className="text-5xl lg:text-7xl font-display font-black text-slate-900 tracking-tighter leading-none mb-2 drop-shadow-[4px_4px_0_#ff9ff3]">{t.name.split(' ')[0]}<br/>{t.name.split(' ')[1]}</h2>
-             <p className="text-xl font-bold bg-white text-slate-900 px-3 py-1 w-fit border-2 border-slate-900 transform rotate-1 shadow-[4px_4px_0_#ffc8dd]">NARUMI MONA // {t.profile}</p>
+             <p className="text-xl font-bold bg-white text-slate-900 px-3 py-1 w-fit border-2 border-slate-900 transform rotate-1 shadow-[4px_4px_0_#ffc8dd]">OFFICIAL RESUME // {t.profile}</p>
            </div>
 
            {/* Quick Stats Grid */}
@@ -618,7 +773,14 @@ export default function App() {
               ))}
            </div>
            
-           <div className="bg-white rounded-[1rem] border-4 border-slate-900 p-8 shadow-[12px_12px_0_#0f172a] transform -rotate-1 max-w-lg mb-4 relative">
+           <motion.div 
+             style={{ 
+               rotateY: mousePos.x * 20, 
+               rotateX: -mousePos.y * 20,
+               transformStyle: "preserve-3d"
+             }}
+             className="bg-white rounded-[1rem] border-4 border-slate-900 p-8 shadow-[12px_12px_0_#0f172a] transform -rotate-1 max-w-lg mb-4 relative"
+           >
              <div className="absolute top-4 right-4 text-slate-200">
                <Music className="w-12 h-12" />
              </div>
@@ -639,7 +801,7 @@ export default function App() {
              <p className="font-bold text-slate-700 leading-relaxed text-sm mb-0 border-l-4 border-pink-200 pl-4">
                 {t.monaStory}
              </p>
-           </div>
+           </motion.div>
            
            {/* Relationship Diagram */}
            <div className="bg-white border-4 border-slate-900 rounded-[2rem] p-4 shadow-[8px_8px_0_#0f172a] transform rotate-1 max-w-lg w-full">
