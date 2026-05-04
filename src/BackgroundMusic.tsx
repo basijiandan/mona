@@ -1,15 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 
-export default function BackgroundMusic() {
+export default function BackgroundMusic({ forcePlay = false }: { forcePlay?: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    // 尝试在组件挂载时播放
+    if (forcePlay && audioRef.current && !isPlaying) {
+      audioRef.current.play().catch(err => console.log("Auto-play blocked", err));
+      setIsPlaying(true);
+    }
+  }, [forcePlay]);
+
+  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = 0.3;
-      // 浏览器通常会阻止自动播放，直到有用户交互
     }
   }, []);
 
