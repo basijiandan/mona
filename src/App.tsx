@@ -72,11 +72,11 @@ const TRANSLATIONS = {
       { text: "「看着Mona一步步走向顶点，真的很感动，这就是养成系偶像的魅力吧！」", Author: "某位老粉留" },
     ],
     songs: [
-      { title: '私、アイドル宣言', desc: '最强偶像的撒娇宣言！感受舞台上的心跳。', tag: '新曲·独占' },
-      { title: 'ブラックペッパー', desc: '即使是辛辣的时刻，也要用魅力化解！', tag: '人气单曲' },
-      { title: 'バカはバカでバカなのだ', desc: '笨拙也没关系，这就是最真实的Mona！', tag: '人气急上升' },
-      { title: '誇り高きアイドル', desc: '骄傲的偶像，挥洒汗水与泪水的舞台。', tag: 'Live人气' },
-      { title: 'ヒロイン育成計画', desc: '成为你心目中的女主角，正在努力中！', tag: '热选翻唱' },
+      { title: '私、アイドル宣言', desc: '最初的偶像宣言！一起享受舞台吧。', tag: '经典·出道' },
+      { title: 'ファンサ', desc: '用实力获胜！最棒的饭撒送给你。', tag: '百万热门' },
+      { title: 'No.1', desc: '向着梦想闪耀的轨迹。', tag: '专辑主打' },
+      { title: '誇り高きアイドル', desc: '骄傲的偶像，挥洒汗水与泪水的舞台。', tag: 'Live人气曲' },
+      { title: '人生は最高の暇つぶし', desc: '坚持做自己，保持自信。', tag: '病毒式走红' },
     ]
   },
   ja: {
@@ -143,8 +143,8 @@ const TRANSLATIONS = {
       { text: "「Monaが頂点へ向かう姿に感動しています。これがアイドルの魅力！」", Author: "とある古参ファンより" },
     ],
     songs: [
-      { title: '私、アイドル宣言', desc: '最強アイドルの甘えん坊宣言！ハートを感じて。', tag: '新曲・独占' },
-      { title: 'ファンサ', desc: '実力で心をつかむ！', tag: 'ミリオンヒット' },
+      { title: '私、アイドル宣言', desc: '最強アイドルの甘えん坊宣言！ハートを感じて。', tag: 'デビュー曲' },
+      { title: 'ファンサ', desc: '実力で心をつかむ！最高のファンサをあなたに。', tag: 'ミリオンヒット' },
       { title: 'No.1', desc: '夢に向かって輝く軌跡。', tag: 'アルバムタイトル' },
       { title: '誇り高きアイドル', desc: '誇り高きアイドル、汗と涙のステージ。', tag: 'ライブ人気' },
       { title: '人生は最高の暇つぶし', desc: '自分らしく、絶対自信のスイートアタック。', tag: 'バイラルヒット' },
@@ -158,17 +158,17 @@ const SONGS = [
     title: '私、アイドル宣言',
     date: '2018.02.10',
     duration: 236,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/98/60/91/986091d1-e98a-8c8b-4de2-2191a8e1a33d/4580074475448.jpg/600x600bb.jpg',
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/98/60/91/986091d1-e98a-8c8b-4de2-2191a8e1a33d/4580074475448.jpg/1000x1000bb.jpg',
     color: 'from-[#ff9a9e] to-[#ffc8dd]',
-    description: '最强偶像的撒娇宣言！感受舞台上的心跳。',
-    tag: '新曲・独占配信',
+    description: '最初的偶像宣言！一起享受舞台吧。',
+    tag: '经典·出道',
   },
   {
     id: 2,
     title: 'ファンサ',
     date: '2019.06.20',
     duration: 249,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/11/0d/96/110d962f-5d25-c552-ebd8-dd750e48af36/4582729912438_art.png/600x600bb.jpg',
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/11/0d/96/110d962f-5d25-c552-ebd8-dd750e48af36/4582729912438_art.png/1000x1000bb.jpg',
     color: 'from-[#ff9a9e] to-[#ffc8dd]',
     description: '用实力赢得你的心！',
     tag: '百万热门',
@@ -178,7 +178,7 @@ const SONGS = [
     title: 'No.1',
     date: '2020.02.14',
     duration: 251,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b5/81/0c/b5810ce8-de3d-e8c0-12ae-c00549afb26b/jacket_SMXX00494B00Z_550.jpg/600x600bb.jpg',
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b5/81/0c/b5810ce8-de3d-e8c0-12ae-c00549afb26b/jacket_SMXX00494B00Z_550.jpg/1000x1000bb.jpg',
     color: 'from-[#ffafcc] to-[#ffc8dd]',
     description: '向着梦想闪耀的轨迹。',
     tag: '专辑主打',
@@ -188,19 +188,19 @@ const SONGS = [
     title: '誇り高きアイドル',
     date: '2020.10.23',
     duration: 253,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/12/28/2c/12282c51-34a4-df2b-87d4-ece995f87e7d/4580074479675.jpg/600x600bb.jpg',
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/12/28/2c/12282c51-34a4-df2b-87d4-ece995f87e7d/4580074479675.jpg/1000x1000bb.jpg',
     color: 'from-[#ffc8dd] to-[#fecfef]',
     description: '骄傲的偶像，挥洒汗水与泪水的舞台。',
-    tag: 'Live人气曲',
+    tag: 'Live人气',
   },
   {
     id: 5,
     title: '人生は最高の暇つぶし',
     date: '2021.08.25',
     duration: 230,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/b3/1b/50/b31b50d3-c70b-3272-bfea-e370638593b3/4550752693389_cover.png/600x600bb.jpg',
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/b3/1b/50/b31b50d3-c70b-3272-bfea-e370638593b3/4550752693389_cover.png/1000x1000bb.jpg',
     color: 'from-[#fed6e3] to-[#ffafcc]',
-    description: '坚持做自己，绝对自信的甜蜜暴击。',
+    description: '坚持做自己，绝对自信。',
     tag: '病毒式走红',
   }
 ];
@@ -374,8 +374,58 @@ export default function App() {
             }}
           >
             <FallingStars />
-            <div className="w-64 h-64 border-8 border-white overflow-hidden mb-8 shadow-2xl animate-bounce relative z-10 bg-white">
-              <img src="https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b5/81/0c/b5810ce8-de3d-e8c0-12ae-c00549afb26b/jacket_SMXX00494B00Z_550.jpg/600x600bb.jpg" alt="No.1 Album Cover" className="w-full h-full object-cover" />
+            <div className="relative mb-12 z-10 flex items-center justify-center">
+              <div className="relative">
+                {/* Microphone SVG */}
+                <svg width="180" height="180" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Mic Grille */}
+                  <rect x="17" y="4" width="14" height="22" rx="7" fill="white" />
+                  <rect x="17" y="10" width="14" height="1" fill="#ff9ff3" opacity="0.3" />
+                  <rect x="17" y="15" width="14" height="1" fill="#ff9ff3" opacity="0.3" />
+                  <rect x="17" y="20" width="14" height="1" fill="#ff9ff3" opacity="0.3" />
+                  
+                  {/* Mic Cradle */}
+                  <path d="M10 18V20C10 27.732 16.268 34 24 34C31.732 34 38 27.732 38 20V18" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                  
+                  {/* Mic Stand/Stem */}
+                  <path d="M24 34V44" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M16 44H32" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                  
+                  {/* Bow tie */}
+                  <g transform="translate(24, 38)">
+                    {/* Loops */}
+                    <path d="M0 0C-4 -4 -12 -4 -12 2C-12 8 -4 8 0 0Z" fill="white" />
+                    <path d="M0 0C4 -4 12 -4 12 2C12 8 4 8 0 0Z" fill="white" />
+                    {/* Knot */}
+                    <circle cx="0" cy="0" r="3" fill="white" stroke="#ff9ff3" strokeWidth="1" />
+                    {/* Tails */}
+                    <path d="M-2 2L-6 8M2 2L6 8" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                  </g>
+                </svg>
+
+                {/* Pulsing Star Next to Mic */}
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 20, -20, 0]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    duration: 2.2, 
+                    ease: "easeInOut" 
+                  }}
+                  className="absolute -top-6 -right-6"
+                >
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                  </svg>
+                </motion.div>
+                
+                {/* Secondary static star for balance */}
+                <div className="absolute -bottom-2 -left-8 opacity-60">
+                   <Star className="w-8 h-8 text-white fill-white" />
+                </div>
+              </div>
             </div>
             <h1 className="text-4xl font-black text-white mb-4 drop-shadow-md font-display tracking-widest text-center px-4 relative z-10 uppercase italic">Narumi Mona - #No.1 Idol</h1>
             <p className="text-white/80 font-bold tracking-[0.4em] uppercase text-sm relative z-10">{t.clickOpen}</p>
