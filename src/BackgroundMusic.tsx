@@ -1,45 +1,53 @@
-import React, { useState } from 'react';
-import ReactPlayer from 'react-player';
-import { Volume2, VolumeX } from 'lucide-react'; // 假设你使用 lucide-react 图标库
-
-// 解决 TypeScript 对 react-player 的类型定义问题
-const Player = ReactPlayer as any;
+import React, { useState, useRef, useEffect } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 export default function BackgroundMusic() {
-  const [isPlaying, setIsPlaying] = useState(true); // 默认开启背景音乐
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    // 尝试在组件挂载时播放
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      // 浏览器通常会阻止自动播放，直到有用户交互
+    }
+  }, []);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(err => {
+          console.error("Playback failed:", err);
+        });
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   return (
     <>
-      {/* 隐藏的播放器：放在屏幕视野外但保持运行 */}
-      <div style={{ position: 'fixed', top: '-1000px', left: 0, pointerEvents: 'none' }}>
-        <Player
-          url="https://www.youtube.com/watch?v=7hR-fW9H_yU" // 《おまちかねランチタイム》
-          playing={isPlaying}
-          loop={true}      // 循环播放
-          volume={0.2}    // 音量大小 (0 到 1)
-          width="0px"
-          height="0px"
-        />
-      </div>
+      <audio
+        ref={audioRef}
+        src="https://cdn1.suno.ai/ac6a5ea5-e7fd-4939-aff8-770cc2a45029.mp3"
+        loop
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
 
-      {/* 悬浮控制按钮：放在页面右下角或右上角 */}
-      <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
+      {/* 悬浮控制按钮 */}
+      <div className="fixed bottom-24 right-6 z-[1000]">
         <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          style={{
-            backgroundColor: '#ffc8dd',
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            border: '4px solid #0f172a',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            boxShadow: '4px 4px 0px #0f172a'
-          }}
+          onClick={togglePlay}
+          className="bg-[#ffc8dd] w-14 h-14 rounded-full border-4 border-slate-900 flex items-center justify-center text-slate-900 cursor-pointer shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 transition-all active:shadow-none active:translate-y-0"
         >
-          {isPlaying ? <Volume2 size={24} /> : <VolumeX size={24} />}
+          {isPlaying ? <Volume2 size={28} /> : <VolumeX size={28} />}
+          {!isPlaying && (
+            <div className="absolute -top-12 right-0 bg-white border-2 border-slate-900 px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap shadow-[2px_2px_0_#0f172a] animate-bounce">
+              点击开启音乐 ✨
+            </div>
+          )}
         </button>
       </div>
     </>

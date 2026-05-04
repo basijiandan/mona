@@ -637,62 +637,65 @@ export default function App() {
           whileInView={{ scale: 1, opacity: 1, rotate: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-          className="relative z-10 w-full max-w-lg"
+          className="relative z-10 w-full max-w-lg mb-12"
         >
           {/* Polaroid Style Frame */}
-          <div className="bg-white p-5 pb-24 shadow-[24px_24px_0px_#0f172a] border-4 border-slate-900 transform rotate-1 transition-all hover:rotate-0 hover:scale-[1.02] duration-500 group">
+          <div className="bg-white p-5 pb-28 shadow-[24px_24px_0px_#0f172a] border-4 border-slate-900 transform rotate-1 transition-all hover:rotate-0 hover:scale-[1.02] duration-500 group">
             {/* The Image Container */}
             <div className="aspect-[3/4] bg-pink-100 border-4 border-slate-900 overflow-hidden relative">
               <img 
-                src="https://images.unsplash.com/photo-1549497538-301228c965dd?q=80&w=800&auto=format&fit=crop" 
-                alt="Thank you from Mona" 
+                src="https://images.unsplash.com/photo-1514525253361-bee8d40d9990?q=80&w=1000&auto=format&fit=crop" 
+                alt="Narumi Mona Thank You" 
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
               />
+              {/* Note: User can replace the src above with their local file path if needed */}
+              
               {/* Overlay elements */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#ff9ff3]/30 to-transparent pointer-events-none"></div>
               <div className="absolute top-4 right-4">
-                <Heart className="w-10 h-10 text-white fill-white drop-shadow-lg animate-pulse" />
+                <Heart className="w-12 h-12 text-white fill-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] animate-pulse" />
               </div>
             </div>
             
             {/* Handwritten style signature area */}
-            <div className="absolute bottom-6 left-0 w-full px-6 flex flex-col items-center">
-               <div className="w-full h-0.5 bg-slate-100 mb-4"></div>
-               <p className="font-display font-black text-4xl text-slate-900 tracking-tighter transform -rotate-1 italic">
+            <div className="absolute bottom-8 left-0 w-full px-6 flex flex-col items-center">
+               <div className="w-full h-1 bg-slate-100 mb-4 rounded-full"></div>
+               <p className="font-display font-black text-5xl text-slate-900 tracking-tighter transform -rotate-1 italic drop-shadow-sm">
                  Thank you from Mona
                </p>
-               <div className="flex gap-2 mt-2">
-                 <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                 <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                 <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+               <div className="flex gap-3 mt-3">
+                 <Sparkles className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+                 <Music className="w-6 h-6 text-pink-400" />
+                 <Sparkles className="w-6 h-6 text-yellow-400 fill-yellow-400" />
                </div>
             </div>
           </div>
           
           {/* Decorative Elements around the frame */}
           <motion.div 
-            animate={{ y: [0, -10, 0], rotate: [12, 15, 12] }}
-            transition={{ repeat: Infinity, duration: 4 }}
-            className="absolute -top-12 -right-12 bg-[#ff9ff3] p-5 rounded-full border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] z-20"
+            animate={{ y: [0, -15, 0], rotate: [12, 18, 12] }}
+            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+            className="absolute -top-14 -right-14 bg-[#ff9ff3] p-6 rounded-full border-4 border-slate-900 shadow-[8px_8px_0_#0f172a] z-20"
           >
-             <Star className="w-10 h-10 text-white fill-white" />
+             <Star className="w-12 h-12 text-white fill-white" />
           </motion.div>
           
           <motion.div 
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ repeat: Infinity, duration: 3 }}
-            className="absolute -bottom-8 -left-12 bg-[#ff6b81] px-8 py-3 border-4 border-slate-900 shadow-[8px_8px_0_#0f172a] transform -rotate-6 z-20"
+            animate={{ scale: [1, 1.15, 1], rotate: [-6, -4, -6] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+            className="absolute -bottom-10 -left-16 bg-[#ff6b81] px-10 py-4 border-4 border-slate-900 shadow-[10px_10px_0_#0f172a] z-20"
           >
-             <span className="font-display font-black text-white text-2xl tracking-widest">大好きだよ！</span>
+             <span className="font-display font-black text-white text-3xl tracking-widest uppercase">大好きだよ！</span>
           </motion.div>
         </motion.div>
         
-        {/* Decorative background text */}
-        <div className="absolute top-[20%] right-[10%] font-display font-black text-8xl text-slate-900 opacity-5 pointer-events-none select-none tracking-tighter">SUCCESS</div>
-        <div className="absolute bottom-[20%] left-[10%] font-display font-black text-8xl text-slate-900 opacity-5 pointer-events-none select-none tracking-tighter transform rotate-180">IDOL</div>
+        {/* Background Decorative Text Layer */}
+        <div className="absolute top-[15%] left-[5%] font-display font-black text-[12rem] text-slate-900 opacity-[0.03] pointer-events-none select-none tracking-tighter leading-none">THANKS</div>
+        <div className="absolute bottom-[10%] right-[5%] font-display font-black text-[12rem] text-slate-900 opacity-[0.03] pointer-events-none select-none tracking-tighter leading-none transform rotate-180">HONEY</div>
 
-        <div className="absolute bottom-8 text-slate-900 font-black tracking-widest opacity-30 text-[10px] uppercase">
-          Narumi Mona Official Archive • 2026
+        <div className="absolute bottom-10 flex flex-col items-center gap-2 opacity-40">
+          <p className="text-slate-900 font-black tracking-[0.3em] text-[12px] uppercase">Narumi Mona Official Archive • 2026</p>
+          <div className="w-24 h-1 bg-slate-900 rounded-full"></div>
         </div>
       </section>
 
