@@ -1,7 +1,8 @@
 import type { FormEvent } from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare } from 'lucide-react';
+import { Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import ReactPlayer from 'react-player';
 
 const SONGS = [
   {
@@ -70,6 +71,7 @@ export default function App() {
   const [newComment, setNewComment] = useState('');
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [bgmPlaying, setBgmPlaying] = useState(false);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -133,9 +135,41 @@ export default function App() {
     }
   };
 
+  // Background Audio Control
+  const toggleBgm = () => {
+    setBgmPlaying(!bgmPlaying);
+  };
+
   return (
     <div className="h-screen w-full overflow-y-auto snap-y snap-mandatory bg-white font-sans text-slate-800">
       
+      {/* Background Audio (YouTube ReactPlayer) */}
+      <div className="fixed bottom-0 left-0 w-[10px] h-[10px] overflow-hidden pointer-events-none opacity-0">
+        <ReactPlayer
+          url="https://www.youtube.com/watch?v=MHXACQ_Ar0o"
+          playing={bgmPlaying}
+          loop={true}
+          volume={1.0}
+          width="10px"
+          height="10px"
+          config={{
+            youtube: {
+              playerVars: { autoplay: 1 }
+            }
+          }}
+        />
+      </div>
+
+      {/* Global BGM Control */}
+      <div className="fixed top-[3.5rem] right-4 z-[100] md:right-8 lg:top-[4.5rem] lg:right-12">
+        <button 
+          onClick={toggleBgm} 
+          className="bg-[#54a0ff] w-12 h-12 rounded-full border-4 border-slate-900 shadow-[4px_4px_0_#0f172a] flex items-center justify-center text-white transition-transform hover:-translate-y-1 active:shadow-none active:translate-y-1 group"
+        >
+          {bgmPlaying ? <Volume2 className="w-6 h-6 group-hover:animate-pulse" /> : <VolumeX className="w-6 h-6" />}
+        </button>
+      </div>
+
       {/* Top Ticker Banner */}
       <div className="fixed top-0 w-full z-50 bg-[#ff6b81] text-white text-xs md:text-sm font-bold py-2 px-4 shadow-[0_4px_0_1px_rgba(15,23,42,1)] border-b-4 border-slate-900 pointer-events-none">
         <div className="whitespace-nowrap animate-[marquee_20s_linear_infinite]">
@@ -254,7 +288,89 @@ export default function App() {
         </div>
       </section>
 
-      {/* PAGE 2: Horizons / Hit Songs Carousel */}
+      {/* PAGE 2: Profile & Relationship Map */}
+      <section className="min-h-screen w-full snap-start bg-[#f8a5c2] pt-24 pb-12 flex flex-col md:flex-row relative overflow-x-hidden border-b-[8px] border-slate-900 px-8 lg:px-16 items-center custom-scrollbar overflow-y-auto">
+        {/* Background Graphic */}
+        <div className="absolute -left-10 -bottom-10 opacity-20 pointer-events-none">
+           <Star className="w-96 h-96 text-white fill-white transform rotate-45" />
+        </div>
+
+        {/* Profile Details */}
+        <div className="w-full md:w-1/2 flex flex-col z-10 space-y-8 h-full justify-center">
+           <div>
+             <div className="bg-slate-900 text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)] transform -rotate-2">Profile</div>
+             <h2 className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter leading-none mb-2 drop-shadow-[4px_4px_0_#0f172a]">NARUMI<br/>MONA</h2>
+             <p className="text-xl font-bold bg-[#fef08a] text-slate-900 px-3 py-1 w-fit border-2 border-slate-900 transform rotate-1 shadow-[4px_4px_0_#0f172a]">成海 萌奈</p>
+           </div>
+           
+           <div className="bg-white rounded-[2rem] border-4 border-slate-900 p-6 shadow-[8px_8px_0_#0f172a] transform -rotate-1 max-w-lg">
+             <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Sparkles className="w-5 h-5 text-pink-500"/> Personality</h3>
+             <p className="font-bold text-slate-700 leading-relaxed mb-6 text-sm">
+                不服输、充满热情与活力的努力家！虽然偶尔会有些笨拙，但为了粉丝总能展现出120%的完美笑容。是个极度妹系却又意外要强的偶像。
+             </p>
+             <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Heart className="w-5 h-5 text-pink-500 fill-pink-500"/> Backstory</h3>
+             <p className="font-bold text-slate-700 leading-relaxed text-sm">
+                看着完美无瑕的姐姐（成海圣奈），内心深处曾有些许自卑，但也因此燃烧起了必须证明自己的斗志。怀揣着“我也要在属于我的舞台上闪耀”的决心，Mona 踏上了残酷又绚丽的偶像之路。
+             </p>
+           </div>
+        </div>
+
+        {/* Relationship Map */}
+        <div className="w-full md:w-1/2 flex flex-col items-center justify-center relative mt-16 md:mt-0 z-10 min-h-[400px]">
+           <h3 className="text-2xl md:text-3xl font-display font-black text-slate-900 mb-8 bg-white px-6 py-2 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] transform rotate-2">Relationship Map</h3>
+           
+           <div className="relative w-full max-w-md aspect-square bg-white/30 rounded-full border-4 border-dashed border-slate-900 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center">
+                 {/* Center: Mona */}
+                 <div className="relative z-20 flex flex-col items-center group">
+                   <div className="w-24 h-24 rounded-full border-4 border-slate-900 overflow-hidden bg-pink-300 shadow-[4px_4px_0_#0f172a] mb-2 transform group-hover:scale-110 transition-transform">
+                      <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=Mona&backgroundColor=ffb8b8" alt="Mona" className="w-full h-full object-cover" />
+                   </div>
+                   <span className="bg-white px-3 py-1 font-black text-slate-900 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0_#0f172a]">Mona</span>
+                 </div>
+
+                 {/* Connecting Line to U */}
+                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 50 50 L 75 25" stroke="#0f172a" strokeWidth="1.5" strokeDasharray="4 2" fill="none" />
+                 </svg>
+
+                 {/* Node: U */}
+                 <div className="absolute top-[10%] xl:top-[5%] right-[10%] xl:right-[5%] flex flex-col items-center group">
+                   <div className="w-20 h-20 rounded-full border-4 border-slate-900 overflow-hidden bg-blue-300 shadow-[4px_4px_0_#0f172a] mb-2 transform group-hover:-translate-y-2 transition-transform">
+                      <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=U&backgroundColor=c7ecee" alt="U" className="w-full h-full object-cover" />
+                   </div>
+                   <span className="bg-white px-3 py-1 font-black text-slate-900 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0_#0f172a]">U</span>
+                   
+                   {/* Relationship Label */}
+                   <div className="absolute -translate-x-1/2 left-1/2 top-full mt-4 lg:left-auto lg:-translate-x-0 lg:top-1/2 lg:-translate-y-1/2 lg:right-[110%] lg:mt-0 xl:-left-36 bg-white p-3 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] opacity-0 group-hover:opacity-100 transition-opacity w-44 pointer-events-none z-30">
+                     <p className="text-xs font-bold text-slate-700 leading-tight text-center lg:text-left">彼此珍视的竞争对手与挚友。在舞台上是绝不让步的对手，私下却是互相倾诉烦恼的理解者。</p>
+                   </div>
+                 </div>
+
+                 {/* Connecting Line to Sena */}
+                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 50 50 L 25 75" stroke="#0f172a" strokeWidth="1.5" strokeDasharray="4 2" fill="none" />
+                 </svg>
+
+                 {/* Node: Sister */}
+                 <div className="absolute bottom-[10%] xl:bottom-[5%] left-[10%] xl:left-[5%] flex flex-col items-center group">
+                   <div className="w-20 h-20 rounded-full border-4 border-slate-900 overflow-hidden bg-yellow-300 shadow-[4px_4px_0_#0f172a] mb-2 transform group-hover:scale-110 transition-transform">
+                      <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=Sena&backgroundColor=fef08a" alt="Sena" className="w-full h-full object-cover" />
+                   </div>
+                   <span className="bg-white px-3 py-1 font-black text-slate-900 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0_#0f172a]">Sena</span>
+                   
+                   {/* Relationship Label */}
+                   <div className="absolute -translate-x-1/2 left-1/2 bottom-full mb-4 lg:left-[110%] lg:-translate-x-0 lg:top-1/2 lg:-translate-y-1/2 lg:bottom-auto lg:mb-0 bg-white p-3 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0_#0f172a] opacity-0 group-hover:opacity-100 transition-opacity w-36 pointer-events-none z-30">
+                     <p className="text-xs font-bold text-slate-700 leading-tight text-center lg:text-left">完美的姐姐，Mona 最憧憬也最想超越的目标。</p>
+                   </div>
+                 </div>
+
+              </div>
+           </div>
+        </div>
+      </section>
+
+      {/* PAGE 3: Horizons / Hit Songs Carousel */}
       <section className="h-screen w-full snap-start bg-white pt-24 pb-12 flex flex-col border-b-[8px] border-slate-900">
         
         {/* Header Section */}
@@ -338,8 +454,8 @@ export default function App() {
         </div>
       </section>
 
-      {/* PAGE 3: Fan Board - Cute & Interactive */}
-      <section className="h-screen w-full snap-start bg-[#48dbfb] pt-24 pb-32 flex flex-col items-center justify-center relative overflow-hidden">
+      {/* PAGE 4: Fan Board - Cute & Interactive */}
+      <section className="min-h-screen w-full snap-start bg-[#48dbfb] pt-24 pb-32 flex flex-col items-center justify-center relative overflow-hidden">
         
         {/* Background Decorations */}
         <div className="absolute top-10 right-10 opacity-20"><Heart className="w-64 h-64 text-white fill-white transform rotate-12" /></div>
