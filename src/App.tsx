@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX } from 'lucide-react';
+import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactPlayer from 'react-player';
 import BackgroundMusic from './BackgroundMusic';
@@ -31,8 +31,29 @@ const TRANSLATIONS = {
     placeholder: "写下你对 Mona 酱的热爱吧！✨",
     thanks: "来自 Mona 的谢意",
     loveYou: "最喜欢你了！",
-    monaBio: "不服输、充满热情与活力的努力家！虽然偶尔会有些笨拙，但为了粉丝总能展现出120%的完美笑容。是个极度妹系却又意外要强的偶像。",
-    monaStory: "怀揣着“我也要在属于我的舞台上闪耀”的决心，Mona 踏上了残酷又绚丽的偶像之路。",
+    monaBio: "性格元气努力、不服输、要强又可爱。怀揣着“我也要在属于我的舞台上闪耀”的决心，Mona 踏上了残酷又绚丽的偶像之路。为了梦想，她目前全心投入事业，暂时没有恋爱计划。",
+    monaStory: "2018年3月以《我的偶像宣言》正式出道。拒绝靠着姐姐成海圣奈的名气，坚持凭自己的努力在寺门艺能事务所作为新人偶像奋斗。2021年发行首张个人专辑，如今已是一线新人偶像。",
+    details: {
+      birthday: "4月24日",
+      age: "16岁（高一）",
+      height: "160cm",
+      blood: "AB型",
+      cv: "夏川椎菜",
+      identity: "寺门艺能所属偶像",
+    },
+    relSena: "成海圣奈",
+    relSenaDesc: "最强后盾 / 竞争对手",
+    relLIP: "LIP×LIP",
+    relLIPDesc: "同事 / 目标",
+    relMinami: "南 (Minami)",
+    relMinamiDesc: "好友 / YouTuber",
+    historyTitle: "星光历程",
+    historyItems: [
+      "2018.03 以《我的偶像宣言》正式出道",
+      "拒绝靠姐姐名气，坚持凭自己努力在寺门艺能奋斗",
+      "2021.02 发布首张个人专辑《#No.1》",
+      "举办多场个人演唱会，与粉丝建立了最深厚的羁绊"
+    ],
     role: "超级偶像",
     name: "成海 萌奈",
     love: "爱心！",
@@ -81,8 +102,29 @@ const TRANSLATIONS = {
     placeholder: "Monaちゃんへの愛を叫ぼう！✨",
     thanks: "Monaからのメッセージ",
     loveYou: "大好きだよ！",
-    monaBio: "負けず嫌いで、情熱と活力に満ちた努力家！時折不器用な面も見せますが、ファンの前では常に120%の完璧な笑顔を絶やしません。",
-    monaStory: "「私も私のステージで輝きたい」という強い決心を胸に、Monaは過酷で華やかなアイドルの道を歩み始めました。",
+    monaBio: "負けず嫌いで、情熱と活力に満ちた努力家！時折不器用な面も見せますが、ファンの前では常に120%の完璧な笑顔を絶やしません。夢のために、現在は恋愛禁止で活動中。",
+    monaStory: "2018年3月『私、アイドル宣言』でデビュー。姉・成海聖奈に頼らず、自らの力で輝くことを決意。寺門芸能所属の新人アイドルとして奮闘し、2021年には1stアルバムをリリースしました。",
+    details: {
+      birthday: "4月24日",
+      age: "16歳（高一）",
+      height: "160cm",
+      blood: "AB型",
+      cv: "夏川椎菜",
+      identity: "寺門芸能所属アイドル",
+    },
+    relSena: "成海聖奈",
+    relSenaDesc: "最強の味方 / ライバル",
+    relLIP: "LIP×LIP",
+    relLIPDesc: "同僚 / 目標",
+    relMinami: "南 (Minami)",
+    relMinamiDesc: "親友 / YouTuber",
+    historyTitle: "活動ヒストリー",
+    historyItems: [
+      "2018.03 『私、アイドル宣言』で本格デビュー",
+      "姉・聖奈の力に頼らず、寺門芸能にて自らの力で活動",
+      "2021.02 1stアルバム『#No.1』をリリース",
+      "ワンマンライブ開催など、ファンと共に歩み続けています"
+    ],
     role: "#No.1 アイドル",
     name: "成海 萌奈",
     love: "大好き！",
@@ -102,10 +144,10 @@ const TRANSLATIONS = {
     ],
     songs: [
       { title: '私、アイドル宣言', desc: '最強アイドルの甘えん坊宣言！ハートを感じて。', tag: '新曲・独占' },
-      { title: 'ブラックペッパー', desc: 'スパイシーな瞬間も、魅力で解決！', tag: '人気シングル' },
-      { title: 'バカはバカでバカなのだ', desc: '不器用だって良い、それがありのままのMona！', tag: '人気急増中' },
-      { title: '誇り高きアイドル', desc: '誇り高きアイドル、汗と涙のステージ福利。', tag: 'ライブ人気' },
-      { title: 'ヒロイン育成計画', desc: 'あなたのヒロインになるために、努力中！', tag: '人気カバー' },
+      { title: 'ファンサ', desc: '実力で心をつかむ！', tag: 'ミリオンヒット' },
+      { title: 'No.1', desc: '夢に向かって輝く軌跡。', tag: 'アルバムタイトル' },
+      { title: '誇り高きアイドル', desc: '誇り高きアイドル、汗と涙のステージ。', tag: 'ライブ人気' },
+      { title: '人生は最高の暇つぶし', desc: '自分らしく、絶対自信のスイートアタック。', tag: 'バイラルヒット' },
     ]
   }
 };
@@ -123,23 +165,23 @@ const SONGS = [
   },
   {
     id: 2,
-    title: 'ブラックペッパー',
-    date: '2021.12.01',
-    duration: 245,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/3d/8c/9b/3d8c9bc8-8e6c-3e2b-7e6e-9e7f8e3f9e3f/4550752693389_cover.png/600x600bb.jpg',
+    title: 'ファンサ',
+    date: '2019.06.20',
+    duration: 249,
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/11/0d/96/110d962f-5d25-c552-ebd8-dd750e48af36/4582729912438_art.png/600x600bb.jpg',
     color: 'from-[#ff9a9e] to-[#ffc8dd]',
-    description: '即使是辛辣的时刻，也要用魅力化解！',
-    tag: '人气单曲',
+    description: '用实力赢得你的心！',
+    tag: '百万热门',
   },
   {
     id: 3,
-    title: 'バカはバカでバカなのだ',
-    date: '2022.04.15',
-    duration: 242,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/6b/fb/8e/6bfb8e97-7e60-4c3d-9d0a-0a0e9a6e3d3d/4550758456674_cover.jpg/600x600bb.jpg',
+    title: 'No.1',
+    date: '2020.02.14',
+    duration: 251,
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b5/81/0c/b5810ce8-de3d-e8c0-12ae-c00549afb26b/jacket_SMXX00494B00Z_550.jpg/600x600bb.jpg',
     color: 'from-[#ffafcc] to-[#ffc8dd]',
-    description: '笨拙也没关系，这就是最真实的Mona！',
-    tag: '人气急上升',
+    description: '向着梦想闪耀的轨迹。',
+    tag: '专辑主打',
   },
   {
     id: 4,
@@ -153,13 +195,13 @@ const SONGS = [
   },
   {
     id: 5,
-    title: 'ヒロイン育成計画',
-    date: '2020.01.15',
-    duration: 238,
-    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/a4/09/cc/a409cc96-03f6-427f-9f7e-7c5e3d3d3d3d/4580074474434.jpg/600x600bb.jpg',
+    title: '人生は最高の暇つぶし',
+    date: '2021.08.25',
+    duration: 230,
+    cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/b3/1b/50/b31b50d3-c70b-3272-bfea-e370638593b3/4550752693389_cover.png/600x600bb.jpg',
     color: 'from-[#fed6e3] to-[#ffafcc]',
-    description: '成为你心目中的女主角，正在努力中！',
-    tag: '热选翻唱',
+    description: '坚持做自己，绝对自信的甜蜜暴击。',
+    tag: '病毒式走红',
   }
 ];
 
@@ -515,6 +557,16 @@ export default function App() {
              <h2 className="text-5xl lg:text-7xl font-display font-black text-slate-900 tracking-tighter leading-none mb-2 drop-shadow-[4px_4px_0_#ff9ff3]">{t.name.split(' ')[0]}<br/>{t.name.split(' ')[1]}</h2>
              <p className="text-xl font-bold bg-white text-slate-900 px-3 py-1 w-fit border-2 border-slate-900 transform rotate-1 shadow-[4px_4px_0_#ffc8dd]">NARUMI MONA // {t.profile}</p>
            </div>
+
+           {/* Quick Stats Grid */}
+           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {Object.entries(t.details).map(([key, value]) => (
+                <div key={key} className="bg-white border-2 border-slate-900 p-3 shadow-[4px_4px_0_#0f172a] rounded-xl flex flex-col hover:-translate-y-1 transition-transform">
+                  <span className="text-[9px] font-black text-pink-500 uppercase tracking-widest mb-1">{key}</span>
+                  <span className="text-xs font-black text-slate-900 leading-none">{value as string}</span>
+                </div>
+              ))}
+           </div>
            
            <div className="bg-white rounded-[1rem] border-4 border-slate-900 p-8 shadow-[12px_12px_0_#0f172a] transform -rotate-1 max-w-lg mb-4 relative">
              <div className="absolute top-4 right-4 text-slate-200">
@@ -524,25 +576,37 @@ export default function App() {
              <p className="font-bold text-slate-700 leading-relaxed mb-8 text-md border-l-4 border-pink-200 pl-4 italic">
                 {t.monaBio}
              </p>
+             <h3 className="font-black text-xl mb-4 flex items-center gap-2 border-b-4 border-slate-900 pb-2"><History className="w-5 h-5 text-pink-500"/> {t.historyTitle}</h3>
+             <div className="space-y-2 mb-6 border-l-4 border-pink-100 pl-4">
+                {t.historyItems.map((item: string, i: number) => (
+                  <div key={i} className="flex gap-2 text-[11px] font-bold text-slate-600">
+                    <span className="text-pink-400 shrink-0 select-none">•</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+             </div>
              <h3 className="font-black text-xl mb-4 flex items-center gap-2 border-b-4 border-slate-900 pb-2"><Heart className="w-5 h-5 text-pink-500 fill-pink-500"/> {t.background}</h3>
-             <p className="font-bold text-slate-700 leading-relaxed text-md mb-4 border-l-4 border-pink-200 pl-4">
+             <p className="font-bold text-slate-700 leading-relaxed text-sm mb-0 border-l-4 border-pink-200 pl-4">
                 {t.monaStory}
              </p>
            </div>
            
            {/* Relationship Diagram */}
            <div className="bg-white border-4 border-slate-900 rounded-[2rem] p-4 shadow-[8px_8px_0_#0f172a] transform rotate-1 max-w-lg w-full">
-             <h3 className="font-black text-lg mb-3 border-b-2 border-dashed border-slate-900 pb-2">{t.relMap}</h3>
-             <div className="flex items-center justify-between gap-1 px-1">
+             <h3 className="font-black text-lg mb-4 border-b-2 border-dashed border-slate-900 pb-2 flex justify-between items-center">
+                {t.relMap}
+                <span className="text-[10px] text-pink-500 bg-pink-50 px-2 py-0.5 rounded-full border border-pink-200">OFFICIAL RELATIONS</span>
+              </h3>
+             <div className="grid grid-cols-3 gap-2 items-center">
                <div className="flex flex-col items-center">
                  <div className="w-12 h-12 bg-blue-100 rounded-full border-2 border-slate-900 flex items-center justify-center mb-1 overflow-hidden shrink-0">
                    <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=Sena&backgroundColor=b6e3f4" alt="Sena" className="w-full h-full object-cover"/>
                  </div>
-                 <p className="text-[10px] font-black text-slate-700">{lang === 'zh' ? '成海圣奈' : '成海聖奈'}</p>
-                 <p className="text-[9px] bg-slate-900 text-white px-1 rounded uppercase">{lang === 'zh' ? '姐姐' : '姉'}</p>
+                 <p className="text-[10px] font-black text-slate-700">{t.relSister}</p>
+                 <p className="text-[9px] bg-slate-900 text-white px-1 rounded uppercase">{t.relSisterStatus}</p>
                </div>
                <div className="flex-1 border-t-2 border-slate-900 border-dashed relative mx-1">
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-[9px] font-bold text-slate-600 bg-white px-1 whitespace-nowrap border-2 border-slate-900 rounded uppercase">{lang === 'zh' ? '憧憬/自卑' : '憧れ/劣等感'}</div>
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-[9px] font-bold text-slate-700 bg-white px-2 whitespace-nowrap border-2 border-slate-900 rounded-full shadow-[2px_2px_0_#ff9ff3]">{t.relSisterStatus}</div>
                </div>
                <div className="flex flex-col items-center mx-1">
                  <div className="w-16 h-16 bg-pink-100 rounded-full border-4 border-pink-400 flex items-center justify-center mb-1 overflow-hidden shadow-sm shrink-0 shadow-[2px_2px_0_#0f172a]">
@@ -551,14 +615,14 @@ export default function App() {
                  <p className="text-sm font-black text-pink-500 uppercase">Mona</p>
                </div>
                <div className="flex-1 border-t-2 border-slate-900 border-dashed relative mx-1">
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-[9px] font-bold text-slate-600 bg-white px-1 whitespace-nowrap border-2 border-slate-900 rounded uppercase text-center leading-none">{lang === 'zh' ? '双向奔赴' : '相愛'}</div>
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-[9px] font-bold text-slate-700 bg-white px-2 whitespace-nowrap border-2 border-slate-900 rounded-full shadow-[2px_2px_0_#ff9ff3]">{t.relFansStatus}</div>
                </div>
                <div className="flex flex-col items-center">
                  <div className="w-12 h-12 bg-[#ffc8dd] rounded-full border-2 border-slate-900 flex items-center justify-center mb-1 overflow-hidden relative shrink-0">
                     <Heart className="w-6 h-6 text-white fill-white" />
                  </div>
-                 <p className="text-[10px] font-black text-slate-700">{t.fans}</p>
-                 <p className="text-[9px] bg-slate-900 text-white px-1 rounded uppercase text-center leading-none">{t.mostImportant}</p>
+                 <p className="text-[10px] font-black text-slate-700">{t.relFans}</p>
+                 <p className="text-[9px] bg-slate-900 text-white px-1 rounded uppercase text-center leading-none tracking-tighter">{t.relFansStatus}</p>
                </div>
              </div>
            </div>
