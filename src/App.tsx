@@ -3,6 +3,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactPlayer from 'react-player';
+import BackgroundMusic from './BackgroundMusic';
+
+const Player = ReactPlayer as any;
 
 const SONGS = [
   {
@@ -22,7 +25,7 @@ const SONGS = [
     duration: 249,
     cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/11/0d/96/110d962f-5d25-c552-ebd8-dd750e48af36/4582729912438_art.png/600x600bb.jpg',
     color: 'from-[#ff9a9e] to-[#ffc8dd]',
-    description: '我的偶像宣言，绝不认输的元气单曲！',
+    description: '要以实力取胜！',
     tag: 'ミリオンヒット',
   },
   {
@@ -32,7 +35,7 @@ const SONGS = [
     duration: 251,
     cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b5/81/0c/b5810ce8-de3d-e8c0-12ae-c00549afb26b/jacket_SMXX00494B00Z_550.jpg/600x600bb.jpg',
     color: 'from-[#ffafcc] to-[#ffc8dd]',
-    description: '永远的第一名，向着梦想闪耀的轨迹。',
+    description: '向着梦想闪耀的轨迹。',
     tag: 'アルバムタイトル曲',
   },
   {
@@ -52,7 +55,7 @@ const SONGS = [
     duration: 230,
     cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/b3/1b/50/b31b50d3-c70b-3272-bfea-e370638593b3/4550752693389_cover.png/600x600bb.jpg',
     color: 'from-[#fed6e3] to-[#ffafcc]',
-    description: '可爱到抱歉，绝对自信的甜蜜暴击。',
+    description: '坚持做自己，绝对自信的甜蜜暴击。',
     tag: 'バイラルヒット',
   }
 ];
@@ -63,27 +66,35 @@ const INITIAL_COMMENTS = [
 ];
 
 function FallingStars() {
-  const [stars, setStars] = useState<{ id: number; left: number; delay: number; scale: number; speed: number; popped: boolean }[]>([]);
+  const [stars, setStars] = useState<{ id: number; left: number; delay: number; scale: number; speed: number; popped: boolean }[]>(() => {
+    return Array.from({length: 10}).map((_, i) => ({
+      id: Date.now() + i,
+      left: Math.random() * 100,
+      delay: Math.random() * 3,
+      scale: Math.random() * 1.5 + 0.3,
+      speed: Math.random() * 4 + 3,
+      popped: false
+    }));
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
       setStars((current) => {
-        // limit number of stars, fewer descents
         const now = Date.now();
-        const active = current.filter(s => now - s.id < 60000); // 60 seconds total life
-        if (active.length > 3) {
+        const active = current.filter(s => !s.popped && (now - s.id) < 10000);
+        if (active.length > 25) {
           return active;
         }
         return [...active, { 
           id: now, 
-          left: Math.random() * 90 + 5, 
-          delay: Math.random() * 2, 
-          scale: Math.random() * 1.5 + 0.5,
-          speed: Math.random() * 20 + 30, // 30s to 50s
+          left: Math.random() * 100, 
+          delay: 0, 
+          scale: Math.random() * 1.5 + 0.3,
+          speed: Math.random() * 4 + 3,
           popped: false
         }];
       });
-    }, 6000); // 6 seconds between starts
+    }, 400);
     return () => clearInterval(interval);
   }, []);
 
@@ -95,7 +106,7 @@ function FallingStars() {
   };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
       {stars.map(star => (
         <div
           key={star.id}
@@ -223,32 +234,7 @@ export default function App() {
         )}
       </AnimatePresence>
       
-      {/* Background Audio (YouTube ReactPlayer) */}
-      <div className="fixed top-[-1000px] left-0 w-[500px] h-[500px] overflow-hidden pointer-events-none">
-        <ReactPlayer
-          url="https://www.youtube.com/watch?v=MHXACQ_Ar0o"
-          playing={bgmPlaying}
-          loop={true}
-          volume={0.2}
-          width="500px"
-          height="500px"
-          config={{
-            youtube: {
-              playerVars: { autoplay: 1 }
-            }
-          }}
-        />
-      </div>
-
-      {/* Global BGM Control */}
-      <div className="fixed top-[5rem] right-4 z-[100] md:right-8 lg:top-[6rem] lg:right-12">
-        <button 
-          onClick={toggleBgm} 
-          className="bg-[#ffc8dd] w-14 h-14 rounded-full border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] flex items-center justify-center text-slate-900 transition-transform hover:-translate-y-1 active:shadow-none active:translate-y-1 group"
-        >
-          {bgmPlaying ? <Volume2 className="w-8 h-8 group-hover:animate-pulse" /> : <VolumeX className="w-8 h-8" />}
-        </button>
-      </div>
+      <BackgroundMusic />
 
       {/* Top Ticker Banner */}
       <div className="fixed top-0 w-full z-50 bg-[#ff6b81] text-white text-xs md:text-sm font-bold py-2 px-4 shadow-[0_4px_0_1px_rgba(15,23,42,1)] border-b-4 border-slate-900 pointer-events-none">
@@ -409,7 +395,7 @@ export default function App() {
         {/* Profile Details */}
         <div className="w-full md:w-1/2 flex flex-col z-10 space-y-8 h-full justify-center">
            <div>
-             <div className="bg-[#ff9ff3] text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)] transform -rotate-2">个人档案</div>
+             <div className="bg-[#ff9ff3] text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)] transform -rotate-2">プロフィール</div>
              <h2 className="text-5xl lg:text-7xl font-display font-black text-white tracking-tighter leading-none mb-2 drop-shadow-[4px_4px_0_#0f172a]">成海<br/>萌奈</h2>
              <p className="text-xl font-bold bg-[#ffc8dd] text-slate-900 px-3 py-1 w-fit border-2 border-slate-900 transform rotate-1 shadow-[4px_4px_0_#0f172a]">成海 萌奈</p>
            </div>
@@ -464,7 +450,7 @@ export default function App() {
            <h3 className="text-2xl md:text-3xl font-display font-black text-slate-900 mb-8 bg-white px-6 py-2 border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] transform rotate-2">我们被吸引的理由</h3>
            
            <div className="bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0_#0f172a] p-8 pb-12 transform -rotate-1 relative max-w-lg w-full">
-             <div className="absolute -top-4 -left-4 bg-[#ffc8dd] px-4 py-2 border-4 border-slate-900 rounded-full font-black text-slate-900 rotate-[-10deg]">Fan's Voice</div>
+             <div className="absolute -top-4 -left-4 bg-[#ffe492] px-4 py-2 border-4 border-[#0a0505] rounded-full font-black text-slate-900 rotate-[-10deg]">Fan's Voice</div>
              
              <div className="space-y-4">
                <div>
@@ -496,8 +482,8 @@ export default function App() {
                </div>
              </div>
              
-             <div className="absolute -bottom-6 -right-6 text-[#ff9ff3]">
-                <Heart className="w-12 h-12 fill-[#ff9ff3]" />
+             <div className="absolute -bottom-6 -right-6 text-[#ffb2b2]">
+                <Heart className="w-12 h-12 fill-[#ffb2b2]" />
              </div>
            </div>
         </div>
@@ -509,8 +495,8 @@ export default function App() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-end px-8 md:px-16 mb-12">
           <div className="relative">
-            <div className="bg-[#ff9ff3] text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)]">音乐作品</div>
-            <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none transform -rotate-1 relative z-10">Subject Listen</h2>
+            <div className="bg-[#ff9ff3] text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)]">ディスコグラフィー</div>
+            <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none transform -rotate-1 relative z-10">最新情報</h2>
             <div className="absolute -bottom-4 -right-8 -z-10 bg-[#ff9ff3] w-24 h-24 rounded-full border-4 border-slate-900 hidden md:block"></div>
           </div>
           
@@ -638,6 +624,75 @@ export default function App() {
                 ))}
               </AnimatePresence>
            </div>
+        </div>
+      </section>
+
+      {/* PAGE 5: Thank You Section */}
+      <section className="h-screen w-full snap-start bg-[#ffc8dd] relative flex flex-col justify-center items-center overflow-hidden border-b-[8px] border-slate-900 px-4">
+        <div className="absolute inset-0 bg-polka opacity-20 pointer-events-none"></div>
+        <FallingStars />
+        
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0, rotate: -3 }}
+          whileInView={{ scale: 1, opacity: 1, rotate: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+          className="relative z-10 w-full max-w-lg"
+        >
+          {/* Polaroid Style Frame */}
+          <div className="bg-white p-5 pb-24 shadow-[24px_24px_0px_#0f172a] border-4 border-slate-900 transform rotate-1 transition-all hover:rotate-0 hover:scale-[1.02] duration-500 group">
+            {/* The Image Container */}
+            <div className="aspect-[3/4] bg-pink-100 border-4 border-slate-900 overflow-hidden relative">
+              <img 
+                src="https://images.unsplash.com/photo-1549497538-301228c965dd?q=80&w=800&auto=format&fit=crop" 
+                alt="Thank you from Mona" 
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+              />
+              {/* Overlay elements */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+              <div className="absolute top-4 right-4">
+                <Heart className="w-10 h-10 text-white fill-white drop-shadow-lg animate-pulse" />
+              </div>
+            </div>
+            
+            {/* Handwritten style signature area */}
+            <div className="absolute bottom-6 left-0 w-full px-6 flex flex-col items-center">
+               <div className="w-full h-0.5 bg-slate-100 mb-4"></div>
+               <p className="font-display font-black text-4xl text-slate-900 tracking-tighter transform -rotate-1 italic">
+                 Thank you from Mona
+               </p>
+               <div className="flex gap-2 mt-2">
+                 <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                 <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                 <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+               </div>
+            </div>
+          </div>
+          
+          {/* Decorative Elements around the frame */}
+          <motion.div 
+            animate={{ y: [0, -10, 0], rotate: [12, 15, 12] }}
+            transition={{ repeat: Infinity, duration: 4 }}
+            className="absolute -top-12 -right-12 bg-[#ff9ff3] p-5 rounded-full border-4 border-slate-900 shadow-[6px_6px_0_#0f172a] z-20"
+          >
+             <Star className="w-10 h-10 text-white fill-white" />
+          </motion.div>
+          
+          <motion.div 
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ repeat: Infinity, duration: 3 }}
+            className="absolute -bottom-8 -left-12 bg-[#ff6b81] px-8 py-3 border-4 border-slate-900 shadow-[8px_8px_0_#0f172a] transform -rotate-6 z-20"
+          >
+             <span className="font-display font-black text-white text-2xl tracking-widest">大好きだよ！</span>
+          </motion.div>
+        </motion.div>
+        
+        {/* Decorative background text */}
+        <div className="absolute top-[20%] right-[10%] font-display font-black text-8xl text-slate-900 opacity-5 pointer-events-none select-none tracking-tighter">SUCCESS</div>
+        <div className="absolute bottom-[20%] left-[10%] font-display font-black text-8xl text-slate-900 opacity-5 pointer-events-none select-none tracking-tighter transform rotate-180">IDOL</div>
+
+        <div className="absolute bottom-8 text-slate-900 font-black tracking-widest opacity-30 text-[10px] uppercase">
+          Narumi Mona Official Archive • 2026
         </div>
       </section>
 
