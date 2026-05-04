@@ -214,10 +214,11 @@ export default function App() {
               setBgmPlaying(true);
             }}
           >
-            <div className="w-56 h-56 rounded-full border-8 border-white overflow-hidden mb-8 shadow-2xl animate-bounce">
+            <FallingStars />
+            <div className="w-56 h-56 rounded-full border-8 border-white overflow-hidden mb-8 shadow-2xl animate-bounce relative z-10">
               <img src="https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/98/60/91/986091d1-e98a-8c8b-4de2-2191a8e1a33d/4580074475448.jpg/600x600bb.jpg" alt="Mona Cover" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-4xl font-black text-white mb-4 drop-shadow-md font-display tracking-widest text-center px-4">Click here to view Mona's information</h1>
+            <h1 className="text-4xl font-black text-white mb-4 drop-shadow-md font-display tracking-widest text-center px-4 relative z-10">Click here to view Mona's information</h1>
           </motion.div>
         )}
       </AnimatePresence>
@@ -413,15 +414,48 @@ export default function App() {
              <p className="text-xl font-bold bg-[#ffc8dd] text-slate-900 px-3 py-1 w-fit border-2 border-slate-900 transform rotate-1 shadow-[4px_4px_0_#0f172a]">成海 萌奈</p>
            </div>
            
-           <div className="bg-white rounded-[2rem] border-4 border-slate-900 p-6 shadow-[8px_8px_0_#0f172a] transform -rotate-1 max-w-lg">
+           <div className="bg-white rounded-[2rem] border-4 border-slate-900 p-6 shadow-[8px_8px_0_#0f172a] transform -rotate-1 max-w-lg mb-4">
              <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Sparkles className="w-5 h-5 text-pink-500"/> 性格</h3>
              <p className="font-bold text-slate-700 leading-relaxed mb-6 text-sm">
                 不服输、充满热情与活力的努力家！虽然偶尔会有些笨拙，但为了粉丝总能展现出120%的完美笑容。是个极度妹系却又意外要强的偶像。
              </p>
              <h3 className="font-black text-xl mb-2 flex items-center gap-2"><Heart className="w-5 h-5 text-pink-500 fill-pink-500"/> 经历</h3>
-             <p className="font-bold text-slate-700 leading-relaxed text-sm">
+             <p className="font-bold text-slate-700 leading-relaxed text-sm mb-4">
                 看着完美无瑕的姐姐（成海圣奈），内心深处曾有些许自卑，但也因此燃烧起了必须证明自己的斗志。怀揣着“我也要在属于我的舞台上闪耀”的决心，Mona 踏上了残酷又绚丽的偶像之路。
              </p>
+           </div>
+           
+           {/* Relationship Diagram */}
+           <div className="bg-white border-4 border-slate-900 rounded-[2rem] p-4 shadow-[8px_8px_0_#0f172a] transform rotate-1 max-w-lg w-full">
+             <h3 className="font-black text-lg mb-3 border-b-2 border-dashed border-slate-900 pb-2">人物关系图</h3>
+             <div className="flex items-center justify-between gap-1 px-1">
+               <div className="flex flex-col items-center">
+                 <div className="w-12 h-12 bg-blue-100 rounded-full border-2 border-slate-900 flex items-center justify-center mb-1 overflow-hidden shrink-0">
+                   <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=Sena&backgroundColor=b6e3f4" alt="Sena" className="w-full h-full object-cover"/>
+                 </div>
+                 <p className="text-[10px] font-black text-slate-700">成海圣奈</p>
+                 <p className="text-[9px] bg-slate-900 text-white px-1 rounded">姐姐</p>
+               </div>
+               <div className="flex-1 border-t-2 border-slate-900 border-dashed relative mx-1">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-[9px] font-bold text-slate-600 bg-white px-1 whitespace-nowrap border-2 border-slate-900 rounded">憧憬/自卑</div>
+               </div>
+               <div className="flex flex-col items-center mx-1">
+                 <div className="w-16 h-16 bg-pink-100 rounded-full border-4 border-pink-400 flex items-center justify-center mb-1 overflow-hidden shadow-sm shrink-0 shadow-[2px_2px_0_#0f172a]">
+                   <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=Mona&backgroundColor=ffc8dd" alt="Mona" className="w-full h-full object-cover"/>
+                 </div>
+                 <p className="text-sm font-black text-pink-500">Mona</p>
+               </div>
+               <div className="flex-1 border-t-2 border-slate-900 border-dashed relative mx-1">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-[9px] font-bold text-slate-600 bg-white px-1 whitespace-nowrap border-2 border-slate-900 rounded">双向奔赴</div>
+               </div>
+               <div className="flex flex-col items-center">
+                 <div className="w-12 h-12 bg-[#ffc8dd] rounded-full border-2 border-slate-900 flex items-center justify-center mb-1 overflow-hidden relative shrink-0">
+                    <Heart className="w-6 h-6 text-white fill-white" />
+                 </div>
+                 <p className="text-[10px] font-black text-slate-700">粉丝们</p>
+                 <p className="text-[9px] bg-slate-900 text-white px-1 rounded">最重要的人</p>
+               </div>
+             </div>
            </div>
         </div>
 
@@ -431,15 +465,37 @@ export default function App() {
            
            <div className="bg-white rounded-[2rem] border-4 border-slate-900 shadow-[8px_8px_0_#0f172a] p-8 pb-12 transform -rotate-1 relative max-w-lg w-full">
              <div className="absolute -top-4 -left-4 bg-[#ffc8dd] px-4 py-2 border-4 border-slate-900 rounded-full font-black text-slate-900 rotate-[-10deg]">Fan's Voice</div>
-             <p className="font-bold text-slate-700 leading-relaxed text-lg mb-6">
-                「总是全力以赴，把粉丝放在第一位的样子最喜欢了！」
-             </p>
-             <p className="font-bold text-slate-700 leading-relaxed text-lg mb-6">
-                「虽然偶尔有些小迷糊，但在舞台上比谁都要闪耀✨」
-             </p>
-             <p className="font-bold text-slate-700 leading-relaxed text-lg text-right text-pink-500">
-                — 某位老粉留
-             </p>
+             
+             <div className="space-y-4">
+               <div>
+                 <p className="font-bold text-slate-700 leading-relaxed text-md mb-1">
+                    「总是全力以赴，把粉丝放在第一位的样子最喜欢了！」
+                 </p>
+                 <p className="text-sm font-bold text-pink-500 text-right">— 来自后援会的A君</p>
+               </div>
+               
+               <div className="border-t-2 border-slate-100 pt-4">
+                 <p className="font-bold text-slate-700 leading-relaxed text-md mb-1">
+                    「虽然偶尔有些小迷糊，但在舞台上比谁都要闪耀✨」
+                 </p>
+                 <p className="text-sm font-bold text-pink-500 text-right">— 永远单推的B酱</p>
+               </div>
+               
+               <div className="border-t-2 border-slate-100 pt-4">
+                 <p className="font-bold text-slate-700 leading-relaxed text-md mb-1">
+                    「每一次的饭撒都精准击中我的心！绝对会一直支持你！」
+                 </p>
+                 <p className="text-sm font-bold text-pink-500 text-right">— 被饭撒拯救的C酱</p>
+               </div>
+               
+               <div className="border-t-2 border-slate-100 pt-4">
+                 <p className="font-bold text-slate-700 leading-relaxed text-md mb-1">
+                    「看着Mona一步步走向顶点，真的很感动，这就是养成系偶像的魅力吧！」
+                 </p>
+                 <p className="text-sm font-bold text-pink-500 text-right">— 某位老粉留</p>
+               </div>
+             </div>
+             
              <div className="absolute -bottom-6 -right-6 text-[#ff9ff3]">
                 <Heart className="w-12 h-12 fill-[#ff9ff3]" />
              </div>
@@ -454,7 +510,7 @@ export default function App() {
         <div className="flex flex-col md:flex-row justify-between items-end px-8 md:px-16 mb-12">
           <div className="relative">
             <div className="bg-[#ff9ff3] text-white w-fit px-4 py-1 text-sm font-black tracking-widest uppercase mb-4 shadow-[4px_4px_0_rgba(15,23,42,0.2)]">音乐作品</div>
-            <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none transform -rotate-1 relative z-10">最新资讯</h2>
+            <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none transform -rotate-1 relative z-10">Subject Listen</h2>
             <div className="absolute -bottom-4 -right-8 -z-10 bg-[#ff9ff3] w-24 h-24 rounded-full border-4 border-slate-900 hidden md:block"></div>
           </div>
           
@@ -530,7 +586,7 @@ export default function App() {
            
            {/* Left: Input Form */}
            <div className="flex flex-col">
-             <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none mb-4 transform -rotate-2">粉丝<br/>留言板</h2>
+             <h2 className="text-6xl md:text-8xl font-display font-black text-slate-900 tracking-tighter leading-none mb-4 transform -rotate-2">ファン<br/>掲示板</h2>
              <p className="text-2xl font-bold text-slate-900 mb-8 px-2 bg-white w-fit border-2 border-slate-900 shadow-[4px_4px_0_#0f172a] transform rotate-1">支持与热爱，送给最闪耀的偶像！</p>
              
              <div className="bg-white rounded-[2rem] border-4 border-slate-900 shadow-[12px_12px_0px_#0f172a] p-8 mt-4 transform -rotate-1">
