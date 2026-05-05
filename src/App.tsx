@@ -426,6 +426,7 @@ export default function App() {
   const [newComment, setNewComment] = useState('');
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const [bgmPlaying, setBgmPlaying] = useState(false);
 
   useEffect(() => {
@@ -492,14 +493,14 @@ export default function App() {
   };
 
   const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -400, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 400, behavior: 'smooth' });
     }
   };
 
@@ -510,7 +511,7 @@ export default function App() {
 
   return (
     <div 
-      className="h-screen w-full overflow-y-auto snap-y snap-mandatory bg-white font-sans text-slate-800"
+      className="h-[100dvh] w-full overflow-y-auto snap-y snap-proximity md:snap-mandatory bg-white font-sans text-slate-800 touch-pan-y"
       ref={scrollContainerRef}
     >
       <AnimatePresence>
@@ -593,7 +594,7 @@ export default function App() {
       </div>
 
       {/* PAGE 1: Neo-Brutalist POP Poster */}
-      <section className="h-screen w-full snap-start relative flex flex-col justify-center items-center bg-[#ffc8dd] overflow-hidden pt-12 border-b-[8px] border-slate-900">
+      <section className="h-[100dvh] w-full snap-start relative flex flex-col justify-center items-center bg-[#ffc8dd] overflow-hidden pt-12 border-b-[8px] border-slate-900">
         
         {/* Abstract Polka Grid Background */}
         <div className="absolute inset-0 bg-polka opacity-30 mix-blend-multiply pointer-events-none"></div>
@@ -743,7 +744,7 @@ export default function App() {
       </section>
 
       {/* PAGE 2: Profile & Relationship Map */}
-      <section className="min-h-screen w-full snap-start bg-[#f0f0f0] pt-24 pb-12 flex flex-col md:flex-row relative overflow-x-hidden border-b-[8px] border-slate-900 px-8 lg:px-16 items-center custom-scrollbar overflow-y-auto">
+      <section className="min-h-[100dvh] w-full snap-start bg-[#f0f0f0] pt-24 pb-12 flex flex-col md:flex-row relative overflow-x-hidden border-b-[8px] border-slate-900 px-8 lg:px-16 items-center custom-scrollbar">
         {/* Album Liner Notes Style Background */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none overflow-hidden flex flex-wrap gap-4 p-4">
            {Array.from({length: 20}).map((_, i) => (
@@ -866,7 +867,7 @@ export default function App() {
       </section>
 
       {/* PAGE 3: Horizons / Hit Songs Carousel */}
-      <section className="h-screen w-full snap-start bg-white pt-24 pb-12 flex flex-col border-b-[8px] border-slate-900">
+      <section className="h-[100dvh] w-full snap-start bg-white pt-24 pb-12 flex flex-col border-b-[8px] border-slate-900">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-end px-8 md:px-16 mb-12">
@@ -887,9 +888,9 @@ export default function App() {
         </div>
 
         {/* Scrolling Carousel */}
-        <div className="w-full relative px-4 md:px-16 flex-1 flex flex-col justify-center">
+        <div className="w-full relative px-4 md:px-16 flex-1 flex flex-col justify-center overflow-hidden">
           <div 
-            ref={scrollContainerRef}
+            ref={carouselRef}
             className="w-full h-full flex overflow-x-auto gap-8 pb-12 pt-4 snap-x snap-mandatory hide-scrollbar items-center"
             style={{ scrollPaddingLeft: '4rem' }}
           >
@@ -935,7 +936,7 @@ export default function App() {
       </section>
 
       {/* PAGE 4: Fan Board - Cute & Interactive */}
-      <section className="min-h-screen w-full snap-start bg-[#ffafcc] pt-24 pb-32 flex flex-col items-center justify-center relative overflow-hidden">
+      <section className="min-h-[100dvh] w-full snap-start bg-[#ffafcc] pt-24 pb-32 flex flex-col items-center justify-center relative overflow-hidden">
         
         {/* Background Decorations */}
         <div className="absolute top-10 right-10 opacity-20"><Heart className="w-64 h-64 text-slate-900 fill-[#ff9ff3] transform rotate-12" /></div>
@@ -1001,7 +1002,7 @@ export default function App() {
       </section>
 
       {/* PAGE 5: Thank You Section */}
-      <section className="h-screen w-full snap-start bg-[#ffc8dd] relative flex flex-col justify-center items-center overflow-hidden border-b-[8px] border-slate-900 px-4">
+      <section className="h-[100dvh] w-full snap-start bg-[#ffc8dd] relative flex flex-col justify-center items-center overflow-hidden border-b-[8px] border-slate-900 px-4">
         <div className="absolute inset-0 bg-polka opacity-20 pointer-events-none"></div>
         <FallingStars />
         
