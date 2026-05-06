@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Nunito:wght@400;600;700;800;900&family=Outfit:wght@400;700;900&family=Noto+Sans+SC:wght@400;700;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Nunito", "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Nunito", "Noto Sans SC", "M PLUS Rounded 1c", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Outfit", "Noto Sans SC", "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif;
 
   --animate-fall: fall linear forwards;
   --animate-star-scatter: star-scatter 0.6s ease-out forwards;

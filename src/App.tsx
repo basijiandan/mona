@@ -1,11 +1,27 @@
 import type { FormEvent } from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX, History, Mic2, MessageCircle, Reply } from 'lucide-react';
+import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX, History, Mic2, MessageCircle, Reply, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactPlayer from 'react-player';
 import BackgroundMusic from './BackgroundMusic';
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 const Player = ReactPlayer as any;
+
+type CommentType = {
+  id: number;
+  author: string;
+  avatar: string;
+  text: string;
+  time: string;
+  likes: number;
+  liked: boolean;
+  replies: { id: number; author: string; text: string; time: string; translatedText?: string }[];
+  translatedText?: string;
+  isTranslating?: boolean;
+};
 
 const TRANSLATIONS = {
   zh: {
@@ -41,11 +57,18 @@ const TRANSLATIONS = {
     role: "超级偶像", name: "成海 萌奈", love: "爱心！", shaping: "塑造成长中", clickOpen: "点击开始了解",
     producerLabel: "致：制作人", loveText: "ラブ！", relSister: "姐姐", relSisterStatus: "憧憬/自卑", relFans: "双向奔赴", relFansStatus: "最重要的人",
     quotes: [
-      { text: "「总是全力以赴，把粉丝放在第一位的样子最喜欢了！」", Author: "来自后援会的A君" },
+      { text: "「总是全力并肩，把粉丝放在第一位的样子最喜欢了！」", Author: "来自后援会的A君" },
       { text: "「虽然偶尔有些小迷糊，但在舞台上比谁都要闪耀✨」", Author: "永远单推的B酱" },
       { text: "「每一次的饭撒都精准击中我的心！绝对会一直支持你！」", Author: "被饭撒拯救的C酱" },
       { text: "「看着Mona一步步走向顶点，真的很感动，这就是养成系偶像的魅力吧！」", Author: "某位老粉留" },
     ],
+    hwTitle: "HoneyWorks 企划",
+    hwSince: "创立于 2010 年",
+    hwDesc: "由 Gom、shito、Yamako 组成的超人气创作单位，以青春、恋爱、偶像成长为核心，打造了规模宏大的《告白实行委员会》系列世界观。",
+    hwCharacters: "人气角色：成海圣奈、LIP×LIP (勇次郎 & 爱藏)、Full Throttle4 等。",
+    translate: "翻译",
+    translating: "翻译中...",
+    original: "原文",
     songs: [
       { title: '私、アイドル宣言', desc: '最初的偶像宣言！一起享受舞台吧。', tag: '经典·出道' },
       { title: 'ファンサ', desc: '用实力获胜！最棒的饭撒送给你。', tag: '百万热门' },
@@ -92,6 +115,13 @@ const TRANSLATIONS = {
       { text: "「ファンサのたびにハートを射抜かれます！ずっと応援するよ！」", Author: "ファンサに救われたCちゃん" },
       { text: "「Monaが頂点へ向かう姿に感動しています。これがアイドルの魅力！」", Author: "とある古参ファンより" },
     ],
+    hwTitle: "HoneyWorks プロジェクト",
+    hwSince: "2010年 結成",
+    hwDesc: "Gom、shito、ヤマコを中心とした大人気クリエイターユニット。青春、恋愛、アイドルの成長をテーマにした『告白実行委員会』シリーズを展開しています。",
+    hwCharacters: "人気キャラ：成海聖奈、LIP×LIP、Full Throttle4 など。",
+    translate: "翻訳",
+    translating: "翻訳中...",
+    original: "原文",
     songs: [
       { title: '私、アイドル宣言', desc: '最強アイドルの甘えん坊宣言！ハートを感じて。', tag: 'デビュー曲' },
       { title: 'ファンサ', desc: '実力で心をつかむ！最高のファンサをあなたに。', tag: 'ミリオンヒット' },
@@ -138,6 +168,13 @@ const TRANSLATIONS = {
       { text: "Her fan service hits me right in the heart every time!", Author: "Saved by Fan Service C" },
       { text: "Watching Mona reach the top is incredibly moving. That's the charm of an idol!", Author: "Veteran Fan" },
     ],
+    hwTitle: "Project HoneyWorks",
+    hwSince: "Founded in 2010",
+    hwDesc: "A hugely popular creative unit composed of Gom, shito, and Yamako. They tell stories of youth, love, and idol growth through the 'Confession Executive Committee' series.",
+    hwCharacters: "Popular Characters: Sena Narumi, LIP×LIP, Full Throttle4, etc.",
+    translate: "Translate",
+    translating: "Translating...",
+    original: "Original",
     songs: [
       { title: 'Watashi, Idol Sengen', desc: 'The first idol declaration! Enjoy the stage.', tag: 'Debut' },
       { title: 'Fansa', desc: 'Winning hearts with skill! The best fanservice.', tag: 'Million Hit' },
@@ -184,6 +221,13 @@ const TRANSLATIONS = {
       { text: "매번 팬서비스에 심장이 멎는 것 같아요! 계속 응원할게요!", Author: "팬서비스에 구원받은 C양" },
       { text: "모나가 정점을 향해 가는 모습을 보면 정말 감동적이에요. 이것이 아이돌의 매력!", Author: "어느 고인물 팬" },
     ],
+    hwTitle: "HoneyWorks 프로젝트",
+    hwSince: "2010년 결성",
+    hwDesc: "Gom, shito, Yamako로 구성된 초인기 크리에이터 유닛. 청춘, 연애, 아이돌의 성장을 테마로 한 '고백실행위원회' 시리즈를 전개하고 있습니다.",
+    hwCharacters: "인기 캐릭터: 나루미 세나, LIP×LIP, Full Throttle4 등.",
+    translate: "번역",
+    translating: "번역 중...",
+    original: "원문",
     songs: [
       { title: '나, 아이돌 선언', desc: '최강 아이돌의 첫 선언! 하트를 느껴봐.', tag: '데뷔곡' },
       { title: '팬서비스', desc: '실력으로 쟁취한다! 최고의 팬서비스를 당신에게.', tag: '밀리언 히트' },
@@ -247,19 +291,6 @@ const SONGS = [
   }
 ];
 
-
-type ReplyType = { id: number; author: string; text: string; time: string };
-
-type CommentType = {
-  id: number;
-  author: string;
-  avatar: string;
-  text: string;
-  time: string;
-  likes: number;
-  liked: boolean;
-  replies: ReplyType[];
-};
 
 const INITIAL_COMMENTS: CommentType[] = [
   { id: 1, author: 'Hina_Chan', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Hina&backgroundColor=ffdfbf', text: 'Mona酱世界第一可爱！💕', time: '2小时前', likes: 256, liked: false, replies: [{ id: 101, author: 'MonaFan', text: '绝对是！', time: '1小时前' }] },
@@ -560,70 +591,118 @@ function InteractiveFinale() {
   const [clicks, setClicks] = useState(0);
   
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center p-8 z-10 text-center">
-      <AnimatePresence>
-        {FINALE_LYRICS.slice(0, clicks).map((line, i) => (
-           <motion.div
-             key={i}
-             initial={{ opacity: 0, scale: 0.8, y: 20 }}
-             animate={{ opacity: 1, scale: 1, y: 0 }}
-             transition={{ type: 'spring', bounce: 0.5 }}
-             className="text-2xl md:text-3xl font-black text-pink-600 mb-6 drop-shadow-sm tracking-widest bg-white/80 px-6 py-3 rounded-full border-2 border-white"
-           >
-              {line}
-           </motion.div>
-        ))}
-      </AnimatePresence>
+    <div className="relative w-full h-full flex flex-col lg:flex-row items-center justify-center p-8 z-10 gap-8 lg:gap-16 overflow-hidden max-w-7xl mx-auto">
+      {/* Left side: Lyrics Bubbles */}
+      <div className={`flex flex-col transition-all duration-1000 ease-in-out w-full font-sans ${clicks >= FINALE_LYRICS.length ? 'lg:w-1/2 items-center lg:items-start scale-90 lg:scale-100' : 'w-full items-center'}`}>
+        <AnimatePresence mode="popLayout">
+          {FINALE_LYRICS.slice(0, clicks).map((line, i) => (
+             <motion.div
+               key={i}
+               initial={{ opacity: 0, scale: 0.8, x: -30 }}
+               animate={{ opacity: 1, scale: 1, x: 0 }}
+               transition={{ type: 'spring', bounce: 0.4, delay: 0.1 }}
+               className="text-base md:text-2xl lg:text-3xl font-black text-pink-600 mb-3 md:mb-6 drop-shadow-sm tracking-widest bg-white/90 backdrop-blur-sm px-5 py-2.5 md:px-8 md:py-4 rounded-3xl md:rounded-[2rem] rounded-bl-none border-2 border-pink-100 shadow-xl shadow-pink-100/50 whitespace-pre-wrap text-left relative max-w-[85vw] md:max-w-none"
+             >
+                <div className="absolute -left-2 -bottom-2 w-3 h-3 md:w-4 md:h-4 bg-white border-2 border-pink-100 rotate-45 transform"></div>
+                {line}
+             </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
 
       {clicks < FINALE_LYRICS.length && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div className="absolute inset-0 pointer-events-none flex items-end lg:items-center justify-center pb-24 lg:pb-0">
           <motion.button 
             initial={{ y: -500, opacity: 0 }}
             animate={{ y: [0, -20, 0], opacity: 1 }}
             transition={{ y: { repeat: Infinity, duration: 2, ease: "easeInOut" }, opacity: { duration: 1 } }}
             onClick={() => setClicks(c => c + 1)}
-            className="pointer-events-auto mt-[40vh] bg-gradient-to-br from-white to-pink-50 p-6 rounded-full border border-pink-100 shadow-2xl shadow-pink-200 hover:scale-110 active:scale-90 transition-transform relative"
+            className="pointer-events-auto bg-gradient-to-br from-white to-pink-50 p-6 md:p-8 rounded-full border-4 border-white shadow-2xl shadow-pink-200 hover:scale-110 active:scale-90 transition-transform relative group z-30"
           >
-            <AngelWing className="absolute -left-12 -top-6 w-24 h-24 opacity-80" />
-            <AngelWing className="absolute -right-12 -top-6 w-24 h-24 opacity-80" flip />
-            <Heart className="w-16 h-16 text-pink-400 fill-pink-400 relative z-10" />
+            <div className="absolute -inset-4 bg-pink-100/30 rounded-full animate-ping opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <AngelWing className="absolute -left-16 -top-8 w-24 md:w-32 h-24 md:h-32 opacity-80" />
+            <AngelWing className="absolute -right-16 -top-8 w-24 md:w-32 h-24 md:h-32 opacity-80" flip />
+            <Heart className="w-16 md:w-24 h-16 md:h-24 text-pink-400 fill-pink-400 relative z-10" />
+            <Sparkles className="absolute -right-4 -bottom-4 w-8 md:w-12 h-8 md:h-12 text-yellow-400 animate-bounce" />
           </motion.button>
         </div>
       )}
       
       {clicks === 0 && (
-        <p className="absolute bottom-32 text-pink-400 font-bold animate-pulse text-sm tracking-widest uppercase">Click the falling heart</p>
+        <p className="absolute bottom-32 text-pink-400 font-black animate-pulse text-sm tracking-[0.4em] uppercase lg:left-1/2 lg:-translate-x-1/2 text-center bg-white/50 px-4 py-2 rounded-full border border-white">Tap the heart to start</p>
       )}
       
-      {clicks >= FINALE_LYRICS.length && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          className="mt-8 flex flex-col items-center z-20"
-        >
-          <div className="border-[12px] border-white shadow-2xl shadow-pink-200 transform rotate-[-2deg] hover:rotate-[2deg] transition-transform duration-500 max-w-sm w-full bg-white pb-12 relative flex flex-col items-center">
-            <img 
-              src="https://github.com/van822853-code/mona/issues/1#issuecomment-4386724364"
-              alt="Mona Live"
-              className="w-full object-cover"
-            />
-            <div className="absolute bottom-3 font-display font-black text-xl text-pink-400">
-               Thank you!
+      {/* Right side: Polaroid */}
+      <AnimatePresence>
+        {clicks >= FINALE_LYRICS.length && (
+          <motion.div 
+            initial={{ opacity: 0, x: 100, rotate: 15, scale: 0.5 }} 
+            animate={{ opacity: 1, x: 0, rotate: -3, scale: 1 }} 
+            transition={{ type: 'spring', damping: 15, stiffness: 60 }}
+            className="w-full lg:w-1/2 flex justify-center items-center z-20"
+          >
+            <div className="border-[20px] md:border-[30px] border-white shadow-[0_30px_70px_rgba(255,182,193,0.4)] transform hover:rotate-[3deg] transition-transform duration-700 max-w-sm md:max-w-md lg:max-w-lg w-full bg-white pb-16 md:pb-24 relative flex flex-col items-center">
+              <div className="w-full aspect-square md:aspect-[4/5] bg-pink-50 overflow-hidden relative border-2 border-pink-50">
+                <img 
+                  src="https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/b3/1b/50/b31b50d3-c70b-3272-bfea-e370638593b3/4550752693389_cover.png/1000x1000bb.jpg"
+                  alt="Mona Live"
+                  className="w-full h-full object-cover grayscale-[20%] sepia-[10%] brightness-[1.05]"
+                />
+                <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.15)] pointer-events-none"></div>
+                <div className="absolute top-4 right-4 bg-white/40 backdrop-blur-md text-[10px] md:text-sm font-black text-pink-900 px-2 md:px-3 py-1 rounded-full border border-white/50 animate-pulse">LIVE 2026</div>
+              </div>
+              <div className="absolute bottom-4 md:bottom-8 font-display font-black text-3xl md:text-5xl text-pink-500 tracking-tighter opacity-80 mix-blend-multiply select-none">
+                 Love You! 🎀
+              </div>
+              <Bow className="absolute -top-12 -left-12 w-24 md:w-32 h-24 md:h-32 transform -rotate-12 drop-shadow-2xl z-30" />
+              <Star className="absolute -bottom-10 -right-10 w-24 h-24 text-yellow-300 fill-yellow-300 animate-spin-slow drop-shadow-xl" />
+              
+              {/* Sticker over image */}
+              <motion.div 
+                animate={{ scale: [1, 1.1, 1] }} 
+                transition={{ repeat: Infinity, duration: 3 }}
+                className="absolute top-[20%] -left-8 bg-white p-3 rounded-xl border-2 border-pink-100 shadow-xl rotate-12"
+              >
+                <Heart className="w-8 h-8 text-pink-500 fill-pink-500" />
+              </motion.div>
             </div>
-            <Bow className="absolute -top-6 -left-6 w-16 h-16 transform -rotate-12" />
-          </div>
-        </motion.div>
-      )}
-
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 export default function App() {
   const [lang, setLang] = useState<'zh' | 'ja' | 'en' | 'ko'>('zh');
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Click outside listener for menus
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.nav-menu-container')) {
+        setLangMenuOpen(false);
+        setMenuOpen(false);
+      }
+    };
+    if (langMenuOpen || menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [langMenuOpen, menuOpen]);
+
+  const toggleLangMenu = () => {
+    setLangMenuOpen(!langMenuOpen);
+    setMenuOpen(false);
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+    setLangMenuOpen(false);
+  };
 
   const switchLanguage = (newLang: 'zh' | 'ja' | 'en' | 'ko') => {
     setLang(newLang);
@@ -687,6 +766,50 @@ export default function App() {
   };
 
   
+  const handleTranslate = async (commentId: number, isReply = false, replyId?: number) => {
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return;
+
+    const textToTranslate = isReply ? comment.replies.find(r => r.id === replyId)?.text : comment.text;
+    if (!textToTranslate) return;
+
+    // Set loading state
+    setComments(prev => prev.map(c => {
+      if (c.id === commentId) {
+        if (isReply) {
+          return { ...c, replies: c.replies.map(r => r.id === replyId ? { ...r, isTranslating: true } : r) };
+        }
+        return { ...c, isTranslating: true };
+      }
+      return c;
+    }));
+
+    try {
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Translate the following idol fan message into ${lang === 'zh' ? 'Simplified Chinese' : lang === 'ja' ? 'Japanese' : lang === 'en' ? 'English' : 'Korean'}. Keep the tone polite and maintain any emojis: "${textToTranslate}"`
+      });
+      
+      const translatedText = result.text;
+
+      setComments(prev => prev.map(c => {
+        if (c.id === commentId) {
+          if (isReply) {
+            return {
+              ...c,
+              replies: c.replies.map(r => r.id === replyId ? { ...r, translatedText, isTranslating: false } : r)
+            };
+          }
+          return { ...c, translatedText, isTranslating: false };
+        }
+        return c;
+      }));
+    } catch (error) {
+      console.error("Translation error:", error);
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, isTranslating: false } : c));
+    }
+  };
+
   const handleAddComment = (e: FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -850,7 +973,7 @@ export default function App() {
       </div>
 
       {/* PAGE 1: Neo-Brutalist POP Poster */}
-      <section className="min-h-[100dvh] w-full relative flex flex-col justify-center items-center bg-gradient-to-br from-[#fff0f5] to-[#ffe4e1] overflow-hidden pt-12 border-b-[8px] border-pink-200">
+      <section className="min-h-[100dvh] w-full relative flex flex-col justify-start lg:justify-center items-center bg-gradient-to-br from-[#fff0f5] to-[#ffe4e1] overflow-x-hidden pt-12 border-b-[8px] border-pink-200">
         
         {/* Abstract Polka Grid Background */}
         <div className="absolute inset-0 bg-polka opacity-30 mix-blend-multiply pointer-events-none"></div>
@@ -864,10 +987,10 @@ export default function App() {
           <div className="flex gap-4 pointer-events-auto">
             <FanSiteBadge text={t.fanSite} />
           </div>
-          <div className="flex gap-4 pointer-events-auto relative">
+          <div className="flex gap-4 pointer-events-auto nav-menu-container relative">
              <div className="relative">
                <button 
-                 onClick={() => setLangMenuOpen(!langMenuOpen)}
+                 onClick={toggleLangMenu}
                  className="bg-gradient-to-br from-[#ffe4e1] to-[#ffb6c1] border-2 border-pink-100 px-4 py-2 rounded-full font-black text-sm tracking-widest uppercase transition-all hover:-translate-y-1 hover:shadow-xl shadow-pink-100 flex items-center gap-2"
                >
                  <Languages className="w-5 h-5" />
@@ -890,7 +1013,7 @@ export default function App() {
                </AnimatePresence>
              </div>
              <div className="relative">
-               <button onClick={() => setMenuOpen(!menuOpen)} className="bg-white border-2 border-pink-100 w-12 h-12 rounded-full flex items-center justify-center font-bold transition-transform hover:-translate-y-1 hover:shadow-xl shadow-pink-100 shadow-xl shadow-pink-100">
+               <button onClick={toggleMenu} className="bg-white border-2 border-pink-100 w-12 h-12 rounded-full flex items-center justify-center font-bold transition-transform hover:-translate-y-1 hover:shadow-xl shadow-pink-100 shadow-xl shadow-pink-100">
                  <Menu className="w-6 h-6"/>
                </button>
                <AnimatePresence>
@@ -1001,7 +1124,7 @@ export default function App() {
       <section id="profile" className="min-h-[100dvh] w-full bg-white pt-24 pb-12 flex flex-col md:flex-row relative overflow-x-hidden border-b-[8px] border-pink-200 px-8 lg:px-16 items-center custom-scrollbar">
         {/* Album Liner Notes Style Background */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none overflow-hidden flex flex-wrap gap-4 p-4">
-           {Array.from({length: 20}).map((_, i) => (
+            {Array.from({length: 20}).map((_, i) => (
              <span key={i} className="text-pink-950 font-display font-black text-4xl transform rotate-6">MONA 1ST ALBUM NO.1</span>
            ))}
         </div>
@@ -1053,9 +1176,28 @@ export default function App() {
                 ))}
              </div>
              <h3 className="font-black text-xl mb-4 flex items-center gap-2 border-b-4 border-pink-200 pb-2"><Heart className="w-5 h-5 text-pink-500 fill-pink-500"/> {t.background}</h3>
-             <p className="font-bold text-stone-600 leading-relaxed text-sm mb-0 border-l-4 border-pink-200 pl-4">
+             <p className="font-bold text-stone-600 leading-relaxed text-sm mb-4 border-l-4 border-pink-200 pl-4">
                 {t.monaStory}
              </p>
+
+             {/* HoneyWorks Section */}
+             <div className="bg-gradient-to-br from-pink-50/80 to-purple-50/80 backdrop-blur-sm rounded-2xl border-t-4 border-pink-400 p-6 shadow-sm mt-4 relative overflow-hidden group">
+                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                  <Star className="w-24 h-24 text-pink-300 fill-pink-300" />
+                </div>
+                <h3 className="font-black text-lg mb-3 flex items-center gap-2 text-pink-950 border-b-2 border-pink-100 pb-2">
+                  <Disc className="w-5 h-5 text-pink-500 animate-[spin_8s_linear_infinite]"/> {t.hwTitle}
+                </h3>
+                <div className="space-y-2">
+                  <p className="text-[10px] bg-pink-100 text-pink-600 px-2 py-0.5 w-fit rounded-full font-black uppercase tracking-wider">{t.hwSince}</p>
+                  <p className="text-[11px] font-bold text-stone-700 leading-tight">
+                    {t.hwDesc}
+                  </p>
+                  <p className="text-[10px] font-black text-pink-500/80 mt-1">
+                    {t.hwCharacters}
+                  </p>
+                </div>
+             </div>
            </motion.div>
            
            {/* Relationship Diagram */}
@@ -1191,7 +1333,7 @@ export default function App() {
 
       
       {/* PAGE 4: MV Preview */}
-      <section id="mv" className="w-full relative py-24 bg-gradient-to-br from-[#fff0f5] to-[#ffe4e1] overflow-hidden border-b-8 border-pink-200">
+      <section id="mv" className="w-full relative py-24 bg-gradient-to-br from-[#fff0f5] to-[#ffe4e1] overflow-x-hidden border-b-8 border-pink-200">
         <div className="absolute inset-0 bg-polka opacity-20 mix-blend-overlay pointer-events-none"></div>
         <div className="absolute top-10 left-10 font-display font-black text-[10rem] text-pink-300 opacity-20 pointer-events-none select-none tracking-tighter leading-none mix-blend-multiply">MOVIES</div>
         
@@ -1239,34 +1381,34 @@ export default function App() {
       </section>
 
       {/* PAGE 5: Fan Board - Cute & Interactive */}
-      <section id="board" className="min-h-[100dvh] w-full bg-gradient-to-tl from-[#fff0f5] to-[#fde2e4] pt-24 pb-32 flex flex-col items-center justify-center relative overflow-hidden">
+      <section id="board" className="min-h-[100dvh] w-full bg-gradient-to-tl from-[#fff0f5] to-[#fde2e4] pt-24 pb-32 flex flex-col items-center justify-start lg:justify-center relative overflow-x-hidden">
         
         {/* Background Decorations */}
         <div className="absolute top-10 right-10 opacity-20"><MicCartoon className="w-64 h-64 transform rotate-12 opacity-80" /></div>
         <div className="absolute bottom-10 left-10 opacity-20"><Star className="w-80 h-80 text-pink-950 fill-[#ffc8dd] transform -rotate-6" /></div>
 
-        <div className="w-full max-w-5xl px-8 z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="w-full max-w-5xl px-4 md:px-8 z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start lg:items-center">
            
            {/* Left: Input Form */}
            <div className="flex flex-col">
-             <h2 className="text-6xl md:text-8xl font-display font-black text-pink-950 tracking-tighter leading-none mb-4 transform rotate-0">{t.boardTitle}</h2>
-             <p className="text-2xl font-bold text-pink-950 mb-8 px-2 bg-white w-fit border-2 border-pink-100 shadow-xl shadow-pink-100 transform rotate-0">{t.boardSubtitle}</p>
+             <h2 className="text-5xl md:text-8xl font-display font-black text-pink-950 tracking-tighter leading-none mb-4 transform rotate-0">{t.boardTitle}</h2>
+             <p className="text-xl md:text-2xl font-bold text-pink-950 mb-8 px-2 bg-white w-fit border-2 border-pink-100 shadow-xl shadow-pink-100 transform rotate-0">{t.boardSubtitle}</p>
              
-             <div className="bg-white rounded-[2rem] border-2 border-pink-100 shadow-xl shadow-pink-100 p-8 mt-4 transform rotate-0">
+             <div className="bg-white rounded-[2rem] border-2 border-pink-100 shadow-xl shadow-pink-100 p-6 md:p-8 mt-4 transform rotate-0">
                <form onSubmit={handleAddComment} className="flex flex-col space-y-6">
                   <textarea 
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder={t.placeholder} 
-                    className="w-full min-h-[160px] bg-[#fff] border-2 border-pink-100 focus:border-[#ff9ff3] rounded-2xl p-6 text-pink-900 text-xl font-bold outline-none transition-all resize-none shadow-xl shadow-pink-100"
+                    className="w-full min-h-[120px] md:min-h-[160px] bg-[#fff] border-2 border-pink-100 focus:border-[#ff9ff3] rounded-2xl p-4 md:p-6 text-pink-900 text-lg md:text-xl font-bold outline-none transition-all resize-none shadow-xl shadow-pink-100"
                     maxLength={150}
                   />
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-slate-400 font-mono text-sm">{newComment.length}/150 文字</span>
+                    <span className="font-bold text-slate-400 font-mono text-xs md:text-sm">{newComment.length}/150 文字</span>
                     <button 
                       type="submit"
                       disabled={!newComment.trim()}
-                      className="bg-gradient-to-br from-[#ffe4e1] to-[#ffb6c1] border-2 border-pink-100 text-pink-950 px-8 py-4 rounded-full font-black text-xl hover:-translate-y-1 hover:shadow-xl shadow-pink-100 shadow-xl shadow-pink-100 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-xl shadow-pink-100 transition-all flex items-center gap-3"
+                      className="bg-gradient-to-br from-[#ffe4e1] to-[#ffb6c1] border-2 border-pink-100 text-pink-950 px-6 py-3 md:px-8 md:py-4 rounded-full font-black text-lg md:text-xl hover:-translate-y-1 hover:shadow-xl shadow-pink-100 shadow-xl shadow-pink-100 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center gap-3"
                     >
                       {t.post} <Send className="w-5 h-5 fill-slate-900" />
                     </button>
@@ -1276,16 +1418,17 @@ export default function App() {
            </div>
 
            {/* Right: Comments List */}
-           <div className="h-[600px] bg-white/40 backdrop-blur-md rounded-[3rem] border-2 border-pink-100 shadow-xl shadow-pink-100 p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+           <div className="h-[400px] md:h-[600px] bg-white/40 backdrop-blur-md rounded-[2rem] md:rounded-[3rem] border-2 border-pink-100 shadow-xl shadow-pink-100 p-4 md:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6">
               <AnimatePresence>
                 
                 {comments.map((comment, i) => (
                   <motion.div 
-                    initial={{ opacity: 0, x: 50, rotate: 2 }}
-                    animate={{ opacity: 1, x: 0, rotate: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 24 }}
                     key={comment.id} 
-                    className="bg-white p-6 rounded-[2rem] rounded-bl-none border-2 border-pink-100 shadow-xl shadow-pink-100 flex flex-col gap-4 hover:-translate-y-1 hover:shadow-xl shadow-pink-100 transition-all relative overflow-hidden"
+                    className="bg-white p-6 rounded-[2rem] rounded-bl-none border-2 border-pink-100 shadow-xl shadow-pink-100 flex flex-col gap-4 hover:-translate-y-1 hover:shadow-xl shadow-pink-100 transition-all relative overflow-hidden shrink-0"
                   >
                     <div className="absolute top-0 right-0 w-8 h-8 bg-polka opacity-20 pointer-events-none"></div>
                     <div className="flex gap-4">
@@ -1297,8 +1440,10 @@ export default function App() {
                             <span className="font-display font-black text-xl text-pink-950">{comment.author}</span>
                             <span className="text-xs font-bold bg-slate-100 px-2 py-1 border-2 border-pink-100 rounded-lg">{comment.time}</span>
                          </div>
-                         <p className="text-stone-600 font-bold text-lg leading-snug">{comment.text}</p>
-                         <div className="flex gap-6 mt-4 items-center">
+                         <p className="text-stone-600 font-bold text-lg leading-snug">
+                           {comment.translatedText || comment.text}
+                         </p>
+                         <div className="flex flex-wrap gap-4 mt-4 items-center">
                             <button onClick={() => handleLike(comment.id)} className={`flex items-center gap-1.5 text-sm font-bold ${comment.liked ? 'text-pink-500' : 'text-stone-400 hover:text-pink-400'} transition-colors`}>
                               <Heart className={`w-5 h-5 ${comment.liked ? 'fill-pink-500' : ''}`} />
                               {comment.likes > 0 && comment.likes}
@@ -1306,6 +1451,15 @@ export default function App() {
                             <button onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)} className="flex items-center gap-1.5 text-stone-400 hover:text-pink-400 text-sm font-bold transition-colors">
                               <MessageCircle className="w-5 h-5" />
                               {comment.replies.length > 0 ? comment.replies.length : 'Reply'}
+                            </button>
+                            
+                            <button 
+                              onClick={() => comment.translatedText ? setComments(prev => prev.map(c => c.id === comment.id ? { ...c, translatedText: undefined } : c)) : handleTranslate(comment.id)}
+                              disabled={comment.isTranslating}
+                              className={`flex items-center gap-1.5 text-xs font-bold transition-all px-3 py-1 rounded-full border-2 ${comment.translatedText ? 'bg-pink-100 border-pink-200 text-pink-600' : 'bg-slate-50 border-slate-100 text-stone-400 hover:text-pink-400 hover:border-pink-100'}`}
+                            >
+                              <Globe className={`w-3.5 h-3.5 ${comment.isTranslating ? 'animate-spin' : ''}`} />
+                              {comment.isTranslating ? t.translating : comment.translatedText ? t.original : t.translate}
                             </button>
                          </div>
                       </div>
@@ -1319,7 +1473,14 @@ export default function App() {
                                <span className="font-bold text-pink-900">{reply.author}</span>
                                <span className="text-xs text-stone-400 font-medium">{reply.time}</span>
                              </div>
-                             <p className="text-stone-600 text-sm font-bold">{reply.text}</p>
+                             <p className="text-stone-600 text-sm font-bold">{reply.translatedText || reply.text}</p>
+                             <button 
+                               onClick={() => reply.translatedText ? setComments(prev => prev.map(c => c.id === comment.id ? { ...c, replies: c.replies.map(r => r.id === reply.id ? { ...r, translatedText: undefined } : r) } : c)) : handleTranslate(comment.id, true, reply.id)}
+                               className="mt-1 text-[10px] font-bold text-pink-400 hover:text-pink-600 flex items-center gap-1 transition-colors"
+                             >
+                               <Globe className="w-2.5 h-2.5" />
+                               {reply.translatedText ? t.original : t.translate}
+                             </button>
                            </div>
                          ))}
                       </div>
@@ -1352,7 +1513,7 @@ export default function App() {
       </section>
 
       {/* PAGE 5: Thank You Section */}
-      <section className="min-h-[100dvh] w-full bg-gradient-to-br from-[#fff0f5] to-[#ffe4e1] relative flex flex-col justify-center items-center overflow-hidden border-b-4 border-pink-100 px-4">
+      <section className="min-h-[100dvh] w-full bg-gradient-to-br from-[#fff0f5] to-[#ffe4e1] relative flex flex-col justify-start lg:justify-center items-center overflow-x-hidden border-b-4 border-pink-100 px-4 pt-20 pb-32">
         <div className="absolute inset-0 bg-polka opacity-10 pointer-events-none mix-blend-multiply"></div>
         <FallingStars />
         <InteractiveFinale />
