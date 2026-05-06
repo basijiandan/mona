@@ -601,9 +601,9 @@ function InteractiveFinale() {
                initial={{ opacity: 0, scale: 0.8, x: -30 }}
                animate={{ opacity: 1, scale: 1, x: 0 }}
                transition={{ type: 'spring', bounce: 0.4, delay: 0.1 }}
-               className="text-lg md:text-2xl lg:text-3xl font-black text-pink-600 mb-4 md:mb-6 drop-shadow-sm tracking-widest bg-white/90 backdrop-blur-sm px-6 py-3 md:px-8 md:py-4 rounded-[2rem] rounded-bl-none border-2 border-pink-100 shadow-xl shadow-pink-100/50 whitespace-pre-wrap text-left relative"
+               className="text-base md:text-2xl lg:text-3xl font-black text-pink-600 mb-3 md:mb-6 drop-shadow-sm tracking-widest bg-white/90 backdrop-blur-sm px-5 py-2.5 md:px-8 md:py-4 rounded-3xl md:rounded-[2rem] rounded-bl-none border-2 border-pink-100 shadow-xl shadow-pink-100/50 whitespace-pre-wrap text-left relative max-w-[85vw] md:max-w-none"
              >
-                <div className="absolute -left-2 -bottom-2 w-4 h-4 bg-white border-2 border-pink-100 rotate-45 transform"></div>
+                <div className="absolute -left-2 -bottom-2 w-3 h-3 md:w-4 md:h-4 bg-white border-2 border-pink-100 rotate-45 transform"></div>
                 {line}
              </motion.div>
           ))}
@@ -611,13 +611,13 @@ function InteractiveFinale() {
       </div>
 
       {clicks < FINALE_LYRICS.length && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div className="absolute inset-0 pointer-events-none flex items-end lg:items-center justify-center pb-24 lg:pb-0">
           <motion.button 
             initial={{ y: -500, opacity: 0 }}
             animate={{ y: [0, -20, 0], opacity: 1 }}
             transition={{ y: { repeat: Infinity, duration: 2, ease: "easeInOut" }, opacity: { duration: 1 } }}
             onClick={() => setClicks(c => c + 1)}
-            className="pointer-events-auto mt-[10vh] bg-gradient-to-br from-white to-pink-50 p-6 md:p-8 rounded-full border-4 border-white shadow-2xl shadow-pink-200 hover:scale-110 active:scale-90 transition-transform relative group"
+            className="pointer-events-auto bg-gradient-to-br from-white to-pink-50 p-6 md:p-8 rounded-full border-4 border-white shadow-2xl shadow-pink-200 hover:scale-110 active:scale-90 transition-transform relative group z-30"
           >
             <div className="absolute -inset-4 bg-pink-100/30 rounded-full animate-ping opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <AngelWing className="absolute -left-16 -top-8 w-24 md:w-32 h-24 md:h-32 opacity-80" />
@@ -675,9 +675,34 @@ function InteractiveFinale() {
 
 export default function App() {
   const [lang, setLang] = useState<'zh' | 'ja' | 'en' | 'ko'>('zh');
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Click outside listener for menus
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.nav-menu-container')) {
+        setLangMenuOpen(false);
+        setMenuOpen(false);
+      }
+    };
+    if (langMenuOpen || menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [langMenuOpen, menuOpen]);
+
+  const toggleLangMenu = () => {
+    setLangMenuOpen(!langMenuOpen);
+    setMenuOpen(false);
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+    setLangMenuOpen(false);
+  };
 
   const switchLanguage = (newLang: 'zh' | 'ja' | 'en' | 'ko') => {
     setLang(newLang);
@@ -962,10 +987,10 @@ export default function App() {
           <div className="flex gap-4 pointer-events-auto">
             <FanSiteBadge text={t.fanSite} />
           </div>
-          <div className="flex gap-4 pointer-events-auto relative">
+          <div className="flex gap-4 pointer-events-auto nav-menu-container relative">
              <div className="relative">
                <button 
-                 onClick={() => setLangMenuOpen(!langMenuOpen)}
+                 onClick={toggleLangMenu}
                  className="bg-gradient-to-br from-[#ffe4e1] to-[#ffb6c1] border-2 border-pink-100 px-4 py-2 rounded-full font-black text-sm tracking-widest uppercase transition-all hover:-translate-y-1 hover:shadow-xl shadow-pink-100 flex items-center gap-2"
                >
                  <Languages className="w-5 h-5" />
@@ -988,7 +1013,7 @@ export default function App() {
                </AnimatePresence>
              </div>
              <div className="relative">
-               <button onClick={() => setMenuOpen(!menuOpen)} className="bg-white border-2 border-pink-100 w-12 h-12 rounded-full flex items-center justify-center font-bold transition-transform hover:-translate-y-1 hover:shadow-xl shadow-pink-100 shadow-xl shadow-pink-100">
+               <button onClick={toggleMenu} className="bg-white border-2 border-pink-100 w-12 h-12 rounded-full flex items-center justify-center font-bold transition-transform hover:-translate-y-1 hover:shadow-xl shadow-pink-100 shadow-xl shadow-pink-100">
                  <Menu className="w-6 h-6"/>
                </button>
                <AnimatePresence>
@@ -1099,7 +1124,7 @@ export default function App() {
       <section id="profile" className="min-h-[100dvh] w-full bg-white pt-24 pb-12 flex flex-col md:flex-row relative overflow-x-hidden border-b-[8px] border-pink-200 px-8 lg:px-16 items-center custom-scrollbar">
         {/* Album Liner Notes Style Background */}
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none overflow-hidden flex flex-wrap gap-4 p-4">
-           {Array.from({length: 20}).map((_, i) => (
+            {Array.from({length: 20}).map((_, i) => (
              <span key={i} className="text-pink-950 font-display font-black text-4xl transform rotate-6">MONA 1ST ALBUM NO.1</span>
            ))}
         </div>
