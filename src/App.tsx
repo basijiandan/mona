@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX, History, Mic2, MessageCircle, Reply, Globe } from 'lucide-react';
+import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX, History, Mic2, MessageCircle, Reply, Globe, Users, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactPlayer from 'react-player';
 import BackgroundMusic from './BackgroundMusic';
@@ -21,6 +21,15 @@ type CommentType = {
   replies: { id: number; author: string; text: string; time: string; translatedText?: string }[];
   translatedText?: string;
   isTranslating?: boolean;
+};
+
+type ChatMessage = {
+  id: number;
+  author: string;
+  avatar: string;
+  text: string;
+  time: string;
+  color: string;
 };
 
 const TRANSLATIONS = {
@@ -69,6 +78,12 @@ const TRANSLATIONS = {
     translate: "翻译",
     translating: "翻译中...",
     original: "原文",
+    chatChannel: "粉丝聊天",
+    chatTitle: "粉丝聊天频道",
+    chatSubtitle: "和全世界的粉丝们一起欢乐聊天！✨",
+    chatPlaceholder: "分享你对 Mona 的想法吧...💬",
+    onlineUsers: "在线粉丝",
+    sendMessage: "发送",
     songs: [
       { title: '私、アイドル宣言', desc: '最初的偶像宣言！一起享受舞台吧。', tag: '经典·出道' },
       { title: 'ファンサ', desc: '用实力获胜！最棒的饭撒送给你。', tag: '百万热门' },
@@ -122,6 +137,12 @@ const TRANSLATIONS = {
     translate: "翻訳",
     translating: "翻訳中...",
     original: "原文",
+    chatChannel: "ファンチャット",
+    chatTitle: "ファンチャットルーム",
+    chatSubtitle: "世界中のファンと一緒に楽しくチャット！✨",
+    chatPlaceholder: "Monaちゃんへの想いをシェアしよう...💬",
+    onlineUsers: "オンラインファン",
+    sendMessage: "送信",
     songs: [
       { title: '私、アイドル宣言', desc: '最強アイドルの甘えん坊宣言！ハートを感じて。', tag: 'デビュー曲' },
       { title: 'ファンサ', desc: '実力で心をつかむ！最高のファンサをあなたに。', tag: 'ミリオンヒット' },
@@ -175,6 +196,12 @@ const TRANSLATIONS = {
     translate: "Translate",
     translating: "Translating...",
     original: "Original",
+    chatChannel: "Fan Chat",
+    chatTitle: "Fan Chat Channel",
+    chatSubtitle: "Chat with fans around the world! ✨",
+    chatPlaceholder: "Share your thoughts about Mona...💬",
+    onlineUsers: "Online Fans",
+    sendMessage: "Send",
     songs: [
       { title: 'Watashi, Idol Sengen', desc: 'The first idol declaration! Enjoy the stage.', tag: 'Debut' },
       { title: 'Fansa', desc: 'Winning hearts with skill! The best fanservice.', tag: 'Million Hit' },
@@ -228,6 +255,12 @@ const TRANSLATIONS = {
     translate: "번역",
     translating: "번역 중...",
     original: "원문",
+    chatChannel: "팬 채팅",
+    chatTitle: "팬 채팅 채널",
+    chatSubtitle: "세계의 팬들과 함께 즐거운 채팅! ✨",
+    chatPlaceholder: "모나에 대한 생각을 공유해요...💬",
+    onlineUsers: "온라인 팬",
+    sendMessage: "전송",
     songs: [
       { title: '나, 아이돌 선언', desc: '최강 아이돌의 첫 선언! 하트를 느껴봐.', tag: '데뷔곡' },
       { title: '팬서비스', desc: '실력으로 쟁취한다! 최고의 팬서비스를 당신에게.', tag: '밀리언 히트' },
@@ -305,6 +338,14 @@ const INITIAL_COMMENTS: CommentType[] = [
   { id: 10, author: 'Thiago_BR', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Thiago&backgroundColor=fed7aa', text: 'Muito talento e fofura! Fã número 1 do Brasil 🇧🇷', time: '20小时前', likes: 88, liked: false, replies: [] },
   { id: 11, author: 'Sari_ID', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Sari&backgroundColor=d9f99d', text: 'Mona-chan semangat terus ya! Suaramu sangat indah.', time: '22小时前', likes: 67, liked: false, replies: [] },
   { id: 12, author: 'Emma_UK', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Emma&backgroundColor=fbcfe8', text: 'Can\'t wait for your next concert! You are a star! 🌟', time: '1天前', likes: 204, liked: false, replies: [] },
+];
+
+const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
+  { id: 1, author: 'Mona_Love', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=MonaLove&backgroundColor=ffdfbf', text: '大家好呀！今天也要开心哦～✨', time: '10:30' },
+  { id: 2, author: 'Star_Fan', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=StarFan&backgroundColor=ffc8dd', text: 'Mona酱今天的直播太棒了！', time: '10:45' },
+  { id: 3, author: 'Happy_Smile', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Happy&backgroundColor=bbf7d0', text: '新歌出来了吗？等不及了～', time: '11:00' },
+  { id: 4, author: 'Dream_Chaser', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Dream&backgroundColor=bfdbfe', text: '大家支持Mona，我们一起加油！💪', time: '11:15' },
+  { id: 5, author: 'Music_Lover', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Music&backgroundColor=fef08a', text: '这个频道真的很温暖呢～', time: '11:30' },
 ];
 
 
@@ -720,6 +761,11 @@ export default function App() {
   const [comments, setComments] = useState(INITIAL_COMMENTS);
   const [newComment, setNewComment] = useState('');
   
+  const [chatMessages, setChatMessages] = useState(INITIAL_CHAT_MESSAGES);
+  const [newChatMessage, setNewChatMessage] = useState('');
+  const [chatUsername, setChatUsername] = useState('');
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [bgmPlaying, setBgmPlaying] = useState(false);
@@ -828,6 +874,39 @@ export default function App() {
     ]);
     setNewComment('');
   };
+
+  const handleAddChatMessage = (e: FormEvent) => {
+    e.preventDefault();
+    if (!newChatMessage.trim()) return;
+    
+    const currentTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const username = chatUsername.trim() || 'Anonymous Fan';
+    
+    const newMessage: ChatMessage = {
+      id: Date.now(),
+      author: username,
+      avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}&backgroundColor=${['ffdfbf', 'ffc8dd', 'bbf7d0', 'bfdbfe', 'fef08a', 'fbcfe8', 'ddd6fe', 'fda4af'][Math.floor(Math.random() * 8)]}`,
+      text: newChatMessage,
+      time: currentTime,
+      color: ['from-[#ffe4e1]', 'from-[#ffb6c1]', 'from-[#fff0f5]', 'from-[#ffb3ba]'][Math.floor(Math.random() * 4)]
+    };
+    
+    setChatMessages([...chatMessages, newMessage]);
+    setNewChatMessage('');
+    
+    // Auto scroll to bottom
+    setTimeout(() => {
+      if (chatScrollRef.current) {
+        chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+      }
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
 
   const handleLike = (id: number) => {
     setComments(comments.map(c => {
@@ -1028,6 +1107,7 @@ export default function App() {
                      <a href="#music" onClick={() => setMenuOpen(false)} className="px-4 py-2 hover:bg-pink-50 rounded-xl font-bold text-pink-900 transition-colors">{t.latest}</a>
                      <a href="#mv" onClick={() => setMenuOpen(false)} className="px-4 py-2 hover:bg-pink-50 rounded-xl font-bold text-pink-900 transition-colors">{t.mvPreview}</a>
                      <a href="#board" onClick={() => setMenuOpen(false)} className="px-4 py-2 hover:bg-pink-50 rounded-xl font-bold text-pink-900 transition-colors">{t.boardTitle}</a>
+                     <a href="#chat" onClick={() => setMenuOpen(false)} className="px-4 py-2 hover:bg-pink-50 rounded-xl font-bold text-pink-900 transition-colors">{t.chatChannel}</a>
                    </motion.div>
                  )}
                </AnimatePresence>
@@ -1508,6 +1588,135 @@ export default function App() {
                 ))}
 
               </AnimatePresence>
+           </div>
+        </div>
+      </section>
+
+      {/* PAGE 6: Fan Chat Channel */}
+      <section id="chat" className="min-h-[100dvh] w-full bg-gradient-to-br from-[#fef08a] to-[#fff0f5] pt-24 pb-32 flex flex-col items-center justify-start lg:justify-center relative overflow-x-hidden border-b-[8px] border-yellow-200">
+        
+        {/* Background Decorations */}
+        <div className="absolute inset-0 bg-polka opacity-10 pointer-events-none mix-blend-multiply"></div>
+        <div className="absolute top-20 right-10 opacity-20"><Users className="w-64 h-64 text-yellow-300 fill-yellow-300 transform rotate-12" /></div>
+        <div className="absolute bottom-20 left-10 opacity-20"><MessageCircle className="w-96 h-96 text-pink-200 fill-pink-200 transform -rotate-6" /></div>
+
+        <div className="w-full max-w-6xl px-4 md:px-8 z-10 flex flex-col items-center mb-8">
+           <h2 className="text-5xl md:text-8xl font-display font-black text-pink-950 tracking-tighter leading-none mb-4 transform rotate-0">{t.chatTitle}</h2>
+           <p className="text-xl md:text-2xl font-bold text-pink-950 mb-8 px-4 bg-white w-fit border-2 border-yellow-200 shadow-xl shadow-yellow-200 transform rotate-0">{t.chatSubtitle}</p>
+        </div>
+
+        <div className="w-full max-w-4xl px-4 md:px-8 z-10 grid grid-cols-1 lg:grid-cols-4 gap-6 h-[600px]">
+           
+           {/* Chat Messages Area */}
+           <div className="lg:col-span-3 flex flex-col rounded-[2rem] border-2 border-yellow-200 shadow-xl shadow-yellow-200 overflow-hidden bg-white/90 backdrop-blur-md">
+             {/* Chat Header */}
+             <div className="bg-gradient-to-r from-[#fef08a] to-[#fff0f5] border-b-2 border-yellow-200 px-6 md:px-8 py-4 flex items-center justify-between">
+               <div className="flex items-center gap-3">
+                 <MessageSquare className="w-6 h-6 text-pink-500" />
+                 <h3 className="font-display font-black text-lg md:text-xl text-pink-950">{t.chatChannel}</h3>
+               </div>
+               <div className="flex items-center gap-2 text-sm font-bold text-pink-600 bg-white px-3 py-1 rounded-full border border-yellow-200">
+                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                 {chatMessages.length + 3} {t.onlineUsers}
+               </div>
+             </div>
+
+             {/* Messages Container */}
+             <div 
+               ref={chatScrollRef}
+               className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 flex flex-col gap-4"
+             >
+               {chatMessages.map((msg, index) => (
+                 <motion.div 
+                   key={msg.id}
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                   className="flex gap-3 items-start"
+                 >
+                   <div className="w-10 h-10 rounded-full border-2 border-yellow-200 overflow-hidden shrink-0 shadow-md">
+                     <img src={msg.avatar} alt={msg.author} className="w-full h-full object-cover" />
+                   </div>
+                   <div className="flex-1">
+                     <div className="flex items-center gap-2 mb-1">
+                       <span className="font-bold text-pink-900 text-sm md:text-base">{msg.author}</span>
+                       <span className="text-xs text-stone-400 font-mono">{msg.time}</span>
+                     </div>
+                     <div className="bg-gradient-to-br from-yellow-50 to-pink-50 rounded-xl px-4 py-3 border border-yellow-200 shadow-md">
+                       <p className="text-stone-700 font-bold text-sm md:text-base leading-snug">{msg.text}</p>
+                     </div>
+                   </div>
+                 </motion.div>
+               ))}
+             </div>
+
+             {/* Message Input */}
+             <div className="border-t-2 border-yellow-200 bg-white/50 backdrop-blur-sm px-4 md:px-6 py-4">
+               <form onSubmit={handleAddChatMessage} className="flex flex-col gap-3">
+                 <input 
+                   type="text"
+                   value={chatUsername}
+                   onChange={(e) => setChatUsername(e.target.value)}
+                   placeholder="Your name (optional)"
+                   maxLength={20}
+                   className="w-full border-2 border-yellow-200 focus:border-yellow-400 rounded-xl px-4 py-2 text-pink-900 font-bold outline-none text-sm transition-all shadow-md"
+                 />
+                 <div className="flex gap-2">
+                   <input 
+                     type="text"
+                     value={newChatMessage}
+                     onChange={(e) => setNewChatMessage(e.target.value)}
+                     placeholder={t.chatPlaceholder} 
+                     maxLength={100}
+                     className="flex-1 border-2 border-yellow-200 focus:border-yellow-400 rounded-xl px-4 py-3 text-pink-900 font-bold outline-none text-sm md:text-base transition-all shadow-md"
+                   />
+                   <button 
+                     type="submit"
+                     disabled={!newChatMessage.trim()}
+                     className="bg-gradient-to-br from-[#fef08a] to-[#ffb3ba] border-2 border-yellow-200 text-pink-950 px-4 py-3 rounded-xl font-black shadow-xl shadow-yellow-200 hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0 transition-all flex items-center justify-center"
+                   >
+                     <Send className="w-5 h-5 fill-slate-900" />
+                   </button>
+                 </div>
+               </form>
+             </div>
+           </div>
+
+           {/* Sidebar: Online Status & Quick Actions */}
+           <div className="lg:col-span-1 flex flex-col gap-4">
+             {/* Online Users */}
+             <div className="bg-white rounded-[2rem] border-2 border-yellow-200 shadow-xl shadow-yellow-200 p-4 md:p-6">
+               <h4 className="font-black text-pink-950 mb-4 flex items-center gap-2 text-sm md:text-base">
+                 <Users className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                 在线粉丝
+               </h4>
+               <div className="space-y-2">
+                 {['Mona_Love', 'Star_Fan', 'Happy_Smile', 'Dream_Chaser', 'Music_Lover'].map((name) => (
+                   <div key={name} className="flex items-center gap-2 text-xs md:text-sm font-bold">
+                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                     <span className="text-pink-900 truncate">{name}</span>
+                   </div>
+                 ))}
+               </div>
+             </div>
+
+             {/* Rules / Info */}
+             <div className="bg-gradient-to-br from-yellow-50 to-pink-50 rounded-[2rem] border-2 border-yellow-200 shadow-xl shadow-yellow-200 p-4 md:p-6">
+               <h4 className="font-black text-pink-950 mb-3 text-sm md:text-base">💬 聊天须知</h4>
+               <ul className="text-[10px] md:text-xs text-pink-900 font-bold space-y-1.5">
+                 <li>✨ 保持友善和尊重</li>
+                 <li>💕 分享对 Mona 的热爱</li>
+                 <li>🌟 互相鼓励和支持</li>
+                 <li>🎀 禁止骚扰和不当言语</li>
+               </ul>
+             </div>
+
+             {/* Mona Heart */}
+             <div className="bg-white rounded-[2rem] border-2 border-yellow-200 shadow-xl shadow-yellow-200 p-4 md:p-6 flex flex-col items-center justify-center text-center">
+               <Heart className="w-12 h-12 text-pink-500 fill-pink-500 mb-2 animate-pulse" />
+               <p className="text-[10px] md:text-xs font-black text-pink-950 uppercase">谢谢你们的</p>
+               <p className="text-[10px] md:text-xs font-black text-pink-500">热爱和支持!</p>
+             </div>
            </div>
         </div>
       </section>
