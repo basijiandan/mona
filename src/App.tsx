@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX, History, Mic2, MessageCircle, Reply, Globe, Users, Smile } from 'lucide-react';
+import { Languages, Play, Pause, Heart, Send, Sparkles, Star, Music, ArrowRight, ArrowLeft, Menu, Disc, MessageSquare, Volume2, VolumeX, History, Mic2, MessageCircle, Reply, Globe, Users, Smile, Check, X, UserPlus, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactPlayer from 'react-player';
 import BackgroundMusic from './BackgroundMusic';
@@ -9,6 +9,32 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 const Player = ReactPlayer as any;
+
+type User = {
+  id: number;
+  username: string;
+  avatar: string;
+  joinDate: string;
+  isFan: boolean;
+};
+
+type FriendRequest = {
+  id: number;
+  fromUserId: number;
+  fromUsername: string;
+  fromAvatar: string;
+  toUserId: number;
+  status: 'pending' | 'accepted' | 'rejected';
+  timestamp: string;
+};
+
+type Friendship = {
+  userId: number;
+  username: string;
+  avatar: string;
+  joinDate: string;
+  becameFriendsDate: string;
+};
 
 type CommentType = {
   id: number;
@@ -348,6 +374,23 @@ const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
   { id: 5, author: 'Music_Lover', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Music&backgroundColor=fef08a', text: '这个频道真的很温暖呢～', time: '11:30' },
 ];
 
+// 初始粉丝列表
+const INITIAL_FANS: User[] = [
+  { id: 1, username: 'Hina_Chan', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Hina&backgroundColor=ffdfbf', joinDate: '2023-01-15', isFan: true },
+  { id: 2, username: 'IdolFan99', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Ken&backgroundColor=ffc8dd', joinDate: '2023-02-20', isFan: true },
+  { id: 3, username: 'K-PopLover', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Jimin&backgroundColor=bbf7d0', joinDate: '2023-03-10', isFan: true },
+  { id: 4, username: 'Alex_US', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Alex&backgroundColor=bfdbfe', joinDate: '2023-04-05', isFan: true },
+  { id: 5, username: 'Maria_Esp', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Maria&backgroundColor=fef08a', joinDate: '2023-05-12', isFan: true },
+  { id: 6, username: 'Yuki_JP', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Yuki&backgroundColor=fbcfe8', joinDate: '2023-06-08', isFan: true },
+  { id: 7, username: 'Chen_CN', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Chen&backgroundColor=a7f3d0', joinDate: '2023-07-22', isFan: true },
+  { id: 8, username: 'Emma_UK', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Emma&backgroundColor=fbcfe8', joinDate: '2023-08-15', isFan: true },
+  { id: 9, username: 'Thiago_BR', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Thiago&backgroundColor=fed7aa', joinDate: '2023-09-03', isFan: true },
+  { id: 10, username: 'Anna_RU', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Anna&backgroundColor=fda4af', joinDate: '2023-10-11', isFan: true },
+  { id: 11, username: 'Pierre_FR', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Pierre&backgroundColor=ddd6fe', joinDate: '2023-11-20', isFan: true },
+  { id: 12, username: 'Sari_ID', avatar: 'https://api.dicebear.com/7.x/miniavs/svg?seed=Sari&backgroundColor=d9f99d', joinDate: '2023-12-08', isFan: true },
+];
+
+
 
 function FallingStars() {
   const [stars, setStars] = useState<{ id: number; left: number; delay: number; scale: number; speed: number; popped: boolean }[]>(() => {
@@ -474,6 +517,114 @@ function FanSiteBadge({ text }: { text: string }) {
     </div>
   );
 }
+
+// 用户登录模态框组件
+function UserLoginModal({ onLoginSuccess }: { onLoginSuccess: (username: string) => void }) {
+  const [tempUsername, setTempUsername] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = tempUsername.trim();
+    if (!trimmed) {
+      setError('请输入用户名');
+      return;
+    }
+    if (trimmed.length > 20) {
+      setError('用户名不能超过20个字符');
+      return;
+    }
+    onLoginSuccess(trimmed);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[250] flex items-center justify-center p-4"
+    >
+      <div className="bg-gradient-to-br from-white to-pink-50 rounded-[2rem] border-4 border-pink-300 shadow-2xl shadow-pink-200 max-w-md w-full p-8">
+        <h2 className="font-black text-2xl md:text-3xl text-pink-600 mb-2 text-center">加入粉丝社区</h2>
+        <p className="text-center text-pink-900 text-sm md:text-base mb-6 font-bold">设置你的用户名开始冒险吧！✨</p>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <input
+              type="text"
+              placeholder="输入用户名 (最多20个字符)"
+              value={tempUsername}
+              onChange={(e) => {
+                setTempUsername(e.target.value);
+                setError('');
+              }}
+              className="w-full px-4 py-3 rounded-xl border-2 border-pink-200 focus:outline-none focus:border-pink-500 bg-white/50 font-bold text-pink-950 placeholder:text-pink-300"
+              maxLength={20}
+            />
+            {error && <p className="text-red-500 text-sm font-bold mt-2">{error}</p>}
+          </div>
+          
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-br from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white font-black py-3 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-pink-300 uppercase tracking-widest"
+          >
+            进入社区
+          </button>
+        </form>
+      </div>
+    </motion.div>
+  );
+}
+
+// 好友请求通知组件
+function FriendRequestNotification({ 
+  request, 
+  onAccept, 
+  onReject 
+}: { 
+  request: FriendRequest; 
+  onAccept: (requestId: number) => void; 
+  onReject: (requestId: number) => void;
+}) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="bg-white border-2 border-pink-200 rounded-xl p-3 md:p-4 shadow-lg flex items-center gap-3"
+    >
+      <img 
+        src={request.fromAvatar} 
+        alt={request.fromUsername}
+        className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-pink-200"
+      />
+      <div className="flex-1 min-w-0">
+        <p className="font-black text-pink-950 text-sm md:text-base truncate">{request.fromUsername}</p>
+        <p className="text-xs text-pink-600 font-bold">发送了好友请求</p>
+      </div>
+      <div className="flex gap-2">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onAccept(request.id)}
+          className="w-8 h-8 md:w-10 md:h-10 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center font-bold transition-colors"
+        >
+          <Check className="w-4 h-4 md:w-5 md:h-5" />
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onReject(request.id)}
+          className="w-8 h-8 md:w-10 md:h-10 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center font-bold transition-colors"
+        >
+          <X className="w-4 h-4 md:w-5 md:h-5" />
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+}
+
 
 
 function MicCartoon({ className }: { className?: string }) {
@@ -628,6 +779,216 @@ const FINALE_LYRICS = [
   "ラブ！💕"
 ];
 
+// 粉丝列表和好友管理面板
+function FriendsPanel({ 
+  allFans, 
+  friends, 
+  currentUser, 
+  friendRequests,
+  sentRequests,
+  onSendFriendRequest, 
+  onAcceptRequest, 
+  onRejectRequest,
+  onRemoveFriend
+}: { 
+  allFans: User[]; 
+  friends: Friendship[];
+  currentUser: User | null;
+  friendRequests: FriendRequest[];
+  sentRequests: FriendRequest[];
+  onSendFriendRequest: (toUserId: number) => void;
+  onAcceptRequest: (requestId: number) => void;
+  onRejectRequest: (requestId: number) => void;
+  onRemoveFriend: (userId: number) => void;
+}) {
+  const [activeTab, setActiveTab] = useState<'fans' | 'friends' | 'requests'>('fans');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredFans = allFans.filter(fan => 
+    fan.username.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    fan.id !== currentUser?.id &&
+    !friends.some(f => f.userId === fan.id)
+  );
+
+  return (
+    <div className="bg-gradient-to-br from-pink-50 to-white rounded-[2rem] border-3 border-pink-200 shadow-xl shadow-pink-100 p-4 md:p-6 max-h-[70vh] overflow-hidden flex flex-col">
+      {/* 标签栏 */}
+      <div className="flex gap-2 mb-4 border-b-2 border-pink-100 pb-3">
+        <button
+          onClick={() => setActiveTab('fans')}
+          className={`px-4 py-2 font-black text-sm md:text-base rounded-lg transition-all transform ${
+            activeTab === 'fans' 
+              ? 'bg-pink-500 text-white shadow-lg shadow-pink-300 scale-105' 
+              : 'bg-white text-pink-600 hover:bg-pink-50'
+          }`}
+        >
+          粉丝列表
+        </button>
+        <button
+          onClick={() => setActiveTab('friends')}
+          className={`px-4 py-2 font-black text-sm md:text-base rounded-lg transition-all transform ${
+            activeTab === 'friends' 
+              ? 'bg-pink-500 text-white shadow-lg shadow-pink-300 scale-105' 
+              : 'bg-white text-pink-600 hover:bg-pink-50'
+          }`}
+        >
+          好友 ({friends.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('requests')}
+          className={`px-4 py-2 font-black text-sm md:text-base rounded-lg transition-all transform relative ${
+            activeTab === 'requests' 
+              ? 'bg-pink-500 text-white shadow-lg shadow-pink-300 scale-105' 
+              : 'bg-white text-pink-600 hover:bg-pink-50'
+          }`}
+        >
+          请求 {friendRequests.length > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">{friendRequests.length}</span>}
+        </button>
+      </div>
+
+      {/* 搜索框 - 仅在粉丝列表显示 */}
+      {activeTab === 'fans' && (
+        <input
+          type="text"
+          placeholder="搜索粉丝..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-3 py-2 mb-3 rounded-lg border-2 border-pink-200 focus:outline-none focus:border-pink-500 bg-white/50 font-bold text-pink-950 placeholder:text-pink-300 text-sm md:text-base"
+        />
+      )}
+
+      {/* 内容区域 */}
+      <div className="flex-1 overflow-y-auto space-y-2 md:space-y-3">
+        {activeTab === 'fans' && (
+          <>
+            {filteredFans.length === 0 ? (
+              <div className="text-center py-8 text-pink-600 font-bold">
+                {searchQuery ? '未找到匹配的粉丝' : '没有更多粉丝了'}
+              </div>
+            ) : (
+              filteredFans.map((fan) => (
+                <motion.div
+                  key={fan.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-white border-2 border-pink-100 rounded-xl p-3 flex items-center justify-between hover:shadow-lg transition-all"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <img 
+                      src={fan.avatar} 
+                      alt={fan.username}
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-pink-200 flex-shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-black text-pink-950 text-sm md:text-base truncate">{fan.username}</p>
+                      <p className="text-xs text-pink-600 font-bold">加入于 {fan.joinDate}</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => onSendFriendRequest(fan.id)}
+                    className="bg-pink-500 hover:bg-pink-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-black text-sm md:text-base flex items-center gap-2 whitespace-nowrap ml-2"
+                  >
+                    <UserPlus className="w-4 h-4" /> 添加
+                  </motion.button>
+                </motion.div>
+              ))
+            )}
+          </>
+        )}
+
+        {activeTab === 'friends' && (
+          <>
+            {friends.length === 0 ? (
+              <div className="text-center py-8 text-pink-600 font-bold">
+                还没有好友，快去添加吧！✨
+              </div>
+            ) : (
+              friends.map((friend) => (
+                <motion.div
+                  key={friend.userId}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-white border-2 border-green-100 rounded-xl p-3 flex items-center justify-between hover:shadow-lg transition-all"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <img 
+                      src={friend.avatar} 
+                      alt={friend.username}
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-green-200 flex-shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-black text-pink-950 text-sm md:text-base truncate">{friend.username}</p>
+                      <p className="text-xs text-green-600 font-bold">成为好友于 {friend.becameFriendsDate}</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => onRemoveFriend(friend.userId)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-lg font-black text-sm ml-2 whitespace-nowrap"
+                  >
+                    删除
+                  </motion.button>
+                </motion.div>
+              ))
+            )}
+          </>
+        )}
+
+        {activeTab === 'requests' && (
+          <>
+            {friendRequests.length === 0 && sentRequests.length === 0 ? (
+              <div className="text-center py-8 text-pink-600 font-bold">
+                没有好友请求
+              </div>
+            ) : (
+              <>
+                {friendRequests.length > 0 && (
+                  <>
+                    <h4 className="font-black text-pink-600 text-sm md:text-base mb-2">收到的请求</h4>
+                    {friendRequests.map((request) => (
+                      <FriendRequestNotification
+                        key={request.id}
+                        request={request}
+                        onAccept={onAcceptRequest}
+                        onReject={onRejectRequest}
+                      />
+                    ))}
+                  </>
+                )}
+                {sentRequests.length > 0 && (
+                  <>
+                    <h4 className="font-black text-pink-600 text-sm md:text-base mt-4 mb-2">发送的请求</h4>
+                    {sentRequests.map((request) => (
+                      <div
+                        key={request.id}
+                        className="bg-white border-2 border-yellow-200 rounded-xl p-3 md:p-4 flex items-center gap-3"
+                      >
+                        <img 
+                          src={request.fromAvatar} 
+                          alt={request.fromUsername}
+                          className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-yellow-200"
+                        />
+                        <div className="flex-1">
+                          <p className="font-black text-pink-950 text-sm md:text-base">{request.fromUsername}</p>
+                          <p className="text-xs text-yellow-600 font-bold">待对方应答</p>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function InteractiveFinale() {
   const [clicks, setClicks] = useState(0);
   
@@ -719,6 +1080,15 @@ export default function App() {
 
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // 好友系统状态
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(true);
+  const [allFans, setAllFans] = useState<User[]>(INITIAL_FANS);
+  const [friends, setFriends] = useState<Friendship[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
+  const [showFriendsPanel, setShowFriendsPanel] = useState(false);
 
   // Click outside listener for menus
   useEffect(() => {
@@ -749,6 +1119,91 @@ export default function App() {
     setLang(newLang);
     setLangMenuOpen(false);
   };
+
+  // 处理用户登录
+  const handleUserLogin = (username: string) => {
+    const newUser: User = {
+      id: Date.now(),
+      username,
+      avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}&backgroundColor=${['ffdfbf', 'ffc8dd', 'bbf7d0', 'bfdbfe'][Math.floor(Math.random() * 4)]}`,
+      joinDate: new Date().toISOString().split('T')[0],
+      isFan: true
+    };
+    setCurrentUser(newUser);
+    setShowLoginModal(false);
+  };
+
+  // 发送好友请求
+  const handleSendFriendRequest = (toUserId: number) => {
+    if (!currentUser) return;
+    
+    // 检查是否已发送过请求
+    const existingRequest = sentRequests.find(r => r.toUserId === toUserId);
+    if (existingRequest) {
+      alert('已发送过好友请求，等待对方回复');
+      return;
+    }
+
+    const newRequest: FriendRequest = {
+      id: Date.now(),
+      fromUserId: currentUser.id,
+      fromUsername: currentUser.username,
+      fromAvatar: currentUser.avatar,
+      toUserId,
+      status: 'pending',
+      timestamp: new Date().toISOString()
+    };
+
+    setSentRequests([...sentRequests, newRequest]);
+    alert(`已向 ${allFans.find(f => f.id === toUserId)?.username} 发送好友请求！`);
+  };
+
+  // 接受好友请求
+  const handleAcceptRequest = (requestId: number) => {
+    const request = friendRequests.find(r => r.id === requestId);
+    if (!request) return;
+
+    const newFriend: Friendship = {
+      userId: request.fromUserId,
+      username: request.fromUsername,
+      avatar: request.fromAvatar,
+      joinDate: allFans.find(f => f.id === request.fromUserId)?.joinDate || new Date().toISOString().split('T')[0],
+      becameFriendsDate: new Date().toISOString().split('T')[0]
+    };
+
+    setFriends([...friends, newFriend]);
+    setFriendRequests(friendRequests.filter(r => r.id !== requestId));
+  };
+
+  // 拒绝好友请求
+  const handleRejectRequest = (requestId: number) => {
+    setFriendRequests(friendRequests.filter(r => r.id !== requestId));
+  };
+
+  // 删除好友
+  const handleRemoveFriend = (userId: number) => {
+    setFriends(friends.filter(f => f.userId !== userId));
+  };
+
+  // 模拟接收好友请求（演示用途）
+  useEffect(() => {
+    if (currentUser && friendRequests.length === 0 && Math.random() > 0.8) {
+      const randomFan = allFans[Math.floor(Math.random() * allFans.length)];
+      if (randomFan.id !== currentUser.id && !friends.some(f => f.userId === randomFan.id)) {
+        const incomingRequest: FriendRequest = {
+          id: Date.now(),
+          fromUserId: randomFan.id,
+          fromUsername: randomFan.username,
+          fromAvatar: randomFan.avatar,
+          toUserId: currentUser.id,
+          status: 'pending',
+          timestamp: new Date().toISOString()
+        };
+        setFriendRequests([incomingRequest]);
+      }
+    }
+  }, [currentUser]);
+
 
   const t = TRANSLATIONS[lang];
 
@@ -972,6 +1427,37 @@ export default function App() {
       className="h-[100dvh] w-full overflow-y-auto bg-white font-sans text-pink-900 scroll-smooth"
       ref={scrollContainerRef}
     >
+      {/* 登录模态框 */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <UserLoginModal onLoginSuccess={handleUserLogin} />
+        )}
+      </AnimatePresence>
+
+      {/* 好友面板 */}
+      <AnimatePresence>
+        {showFriendsPanel && currentUser && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-24 right-4 z-[210] w-[95vw] md:w-[600px] max-h-[calc(100vh-200px)]"
+          >
+            <FriendsPanel
+              allFans={allFans}
+              friends={friends}
+              currentUser={currentUser}
+              friendRequests={friendRequests}
+              sentRequests={sentRequests}
+              onSendFriendRequest={handleSendFriendRequest}
+              onAcceptRequest={handleAcceptRequest}
+              onRejectRequest={handleRejectRequest}
+              onRemoveFriend={handleRemoveFriend}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {!started && (
           <motion.div
@@ -1067,6 +1553,56 @@ export default function App() {
             <FanSiteBadge text={t.fanSite} />
           </div>
           <div className="flex gap-4 pointer-events-auto nav-menu-container relative">
+            {/* 用户信息显示 */}
+            {currentUser && (
+              <div className="flex items-center gap-2 bg-gradient-to-br from-green-100 to-green-50 border-2 border-green-300 px-4 py-2 rounded-full font-black text-sm">
+                <img 
+                  src={currentUser.avatar} 
+                  alt={currentUser.username}
+                  className="w-6 h-6 rounded-full border-2 border-green-300"
+                />
+                <span className="text-green-700 hidden sm:inline">{currentUser.username}</span>
+                <span className="text-green-700 text-xs">({friends.length})</span>
+              </div>
+            )}
+
+            {/* 好友面板按钮 */}
+            {currentUser && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowFriendsPanel(!showFriendsPanel)}
+                className="relative bg-gradient-to-br from-purple-200 to-purple-100 border-2 border-purple-300 px-4 py-2 rounded-full font-black text-sm flex items-center gap-2 hover:shadow-lg transition-all"
+              >
+                <Users className="w-5 h-5" />
+                粉丝圈
+                {friendRequests.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-black rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                    {friendRequests.length}
+                  </span>
+                )}
+              </motion.button>
+            )}
+
+            {/* 退出登录按钮 */}
+            {currentUser && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setCurrentUser(null);
+                  setShowLoginModal(true);
+                  setFriends([]);
+                  setFriendRequests([]);
+                  setSentRequests([]);
+                  setShowFriendsPanel(false);
+                }}
+                className="bg-gradient-to-br from-red-200 to-red-100 border-2 border-red-300 px-4 py-2 rounded-full font-black text-sm hover:shadow-lg transition-all"
+              >
+                <LogOut className="w-5 h-5" />
+              </motion.button>
+            )}
+
              <div className="relative">
                <button 
                  onClick={toggleLangMenu}
